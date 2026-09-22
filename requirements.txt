@@ -1,0 +1,30 @@
+# Core
+numpy
+pandas
+scipy
+statsmodels
+
+# Models
+scikit-learn
+xgboost
+# tabpfn          # tabular foundation model — decided later
+# trust-free      # AdaLogit — decided later
+
+# Interpretability
+shap
+lime
+
+# Fairness
+fairlearn
+
+# Visualisation
+matplotlib
+seaborn
+plotly
+
+# App
+streamlit
+
+# Notebooks
+ipykernel
+jupyter

@@ -13,13 +13,14 @@ Collected at Columbia Business School, 2002–2004. Public copy of the Kaggle
 | Columns | 195 |
 | Participants | 551 (`iid`), across 21 sessions (`wave`) |
 | Target | `match` = 1 if both said yes — 1,380 positives (16.5%) |
-| Encoding | ASCII, comma-separated |
+| Encoding | Mac Roman (a few accented names) — read with `encoding="mac_roman"` |
 
 Load with:
 
 ```python
 import pandas as pd
-df = pd.read_csv("data/raw/speed_dating.csv")
+df = pd.read_csv("data/raw/speed_dating.csv", encoding="mac_roman")
+# or: from src.data import load_raw; df = load_raw()
 ```
 
 ## Codebook
