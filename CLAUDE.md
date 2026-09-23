@@ -34,10 +34,12 @@
 - **No feature constant within a wave** (that column is the wave under another name).
 - Encoding with `OneHotEncoder` **inside the pipeline**, fitted on the training fold only.
 - Column names: `her_` / `his_` for a person, a plain word for the pair, one underscore at most.
+- `raceclash` = someone cares about background **and** the pair is mixed. Strongest single feature
+  (12.6% match against 18.0%) and built from ethnicity, so the fairness notebook must examine it.
 - **Two-stage target.** A match is she says yes and he says yes. Each pair becomes two decision rows
   (`self_` = the decider, `other_` = the partner, plus a `female` flag), the model predicts `dec`, and
   the two probabilities are multiplied. 8,368 rows, target at 37%/47% instead of a 16.5% joint event.
-  Top decile: 28% matches against 22% predicting `match` directly. `dec` is a target, never a feature.
+  Top decile: 30% matches against 23% predicting `match` directly. `dec` is a target, never a feature.
 
 ## Layout
 `data/raw` · `data/processed` (committed) · `docs/` · `notebooks/` (01_eda, 02_features, 03_models,
