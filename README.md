@@ -59,9 +59,14 @@ self-contained: imports, cleaning and analysis are all inside it, there is no sh
 | Notebook | What it does | Output |
 |---|---|---|
 | `01_eda.ipynb` | The raw data: how it is organised, which columns leak, what the variables mean and how they are coded. Builds one row per pair. | `data/processed/pairs.csv` (4,184 × 138) |
-| `02_features.ipynb` | Cleaning, comparison features, encoding, and a check of what overlaps. | `data/processed/model_table.csv` (4,184 × 97) |
+| `02_features.ipynb` | Cleaning, comparison features, encoding, and a check of what overlaps. | `data/processed/model_table.csv` (4,184 × 58) |
+| `03_models.ipynb` | Logistic regression and XGBoost on fixed folds. Saves the out-of-fold predictions the next notebooks read. | `model_table_folds.csv`, `oof_predictions.csv` |
+| `03b_tabpfn_colab.ipynb` | TabPFN. Runs on Colab with a GPU — see the header of the notebook. | `tabpfn_oof.csv`, to drop into `data/processed/` |
 
 `data/processed/` is git-ignored: rerun the notebooks to rebuild it.
+
+Notebooks 04 to 06 (interpretability, stability, fairness) read `oof_predictions.csv` and refit
+nothing, so they can be written in parallel.
 
 ## Method, decided so far
 
