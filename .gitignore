@@ -18,3 +18,6 @@ venv/
 data/processed/
 models/*.pkl
 models/*.joblib
+
+# Stray output if a notebook is run from notebooks/
+notebooks/data/
