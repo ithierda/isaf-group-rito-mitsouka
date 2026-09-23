@@ -14,10 +14,7 @@ venv/
 .vscode/*
 !.vscode/settings.json
 
-# Generated data & models (keep data/raw tracked)
-data/processed/
-models/*.pkl
-models/*.joblib
-
-# Stray output if a notebook is run from notebooks/
-notebooks/data/
+# Generated tables are committed: everyone needs them without rerunning the notebooks.
+# Only the local clutter is ignored.
+*.pkl
+*.joblib
