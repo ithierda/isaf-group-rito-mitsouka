@@ -4,32 +4,45 @@
 - X-HEC M2 course *Interpretability, Stability & Algorithmic Fairness* (Prof. C. Pérignon). Group of 6.
 - Client: **Les Rito Mitsouka**, a fictional dating app deciding which pairs of profiles to recommend.
 - Task: predict **`match`** (both said yes). Binary, 16.5% positives.
-- Compare 3 models: white-box (logit / AdaLogit), ML (XGBoost), tabular foundation model (TabPFN or other, TBD).
-- Assess each on 4 dimensions: performance (statistical + economic via a cost matrix), interpretability, stability, fairness.
-- **Protected attribute: ethnicity** (`race`, `race_o`, `samerace`). Goal: check the model is not racially biased.
-- Deliverables (Mon 28/09, 09:40): slides, notebook/code, Streamlit app. Internal target: done by Fri 25/09.
+- Three models: **lasso logistic regression** (white box), **XGBoost**, **TabPFN** (foundation model, run on Colab).
+- Four dimensions: performance (statistical + economic), interpretability, stability, fairness.
+- **Protected attribute: ethnicity.** Goal: check the recommendation engine is not racially biased.
+- Deliverables (Mon 28/09, 09:40): slides, notebooks, Streamlit app.
 
 ## Golden rules
 - Everything in **English** (code, comments, notebooks, slides).
-- **Nothing fancy.** Concise, clear, precise. No over-engineering, no unnecessary abstractions, no decorative output.
-- Build **step by step with the user**; propose, explain briefly, wait for validation before big changes.
-- Never modify `data/raw/`. Generated data goes to `data/processed/` (git-ignored).
+- **Nothing fancy.** Concise, clear, precise. No over-engineering, no decorative output.
+- Propose, explain briefly, wait for validation before big changes.
+- Never modify `data/raw/`. `data/processed/` **is committed** — the team needs the tables without rerunning anything.
 
 ## Data (see `data/README.md`, codebook in `docs/`)
-- `data/raw/speed_dating.csv`: 8,378 rows x 195 cols, 551 participants, 21 waves. Load with `src.data.load_raw()` (Mac Roman encoding).
-- Each date appears **twice** (`iid` / `pid`); 4,184 pairs, `match` identical on both rows. 10 rows have no `pid`.
-- All pairs are woman–man → **decision: one row per pair**, woman's features vs man's features.
-- Variable timing: 75 known **before** the date (usable), 21 **during** (`dec`, `attr`…`met`, `_o` versions → leakage), 87 **after** (`*_s`, `*_2`, `*_3` → leakage), 11 IDs/design.
-- The partner's profile is not on a row (only `age_o`, `race_o`, `pf_o_*`): join via `pid` to compare profiles.
-- Preference scales (`*1_1`, `*2_1`, `*4_1`): codebook says 1–10 for waves 6–9 and 100-point allocation otherwise → check and normalise.
-- Ethnicity groups are unbalanced (Black ~5%, no Native American): fairness tests will have wide intervals.
+- `data/raw/speed_dating.csv`: 8,378 rows x 195 cols, 551 participants, 21 waves, Mac Roman encoding.
+- Each date appears **twice**; 4,184 pairs, all woman–man → **one row per pair**, `her_*` and `his_*`.
+- 108 of the 195 columns are filled in during or after the date → leakage, removed in 01.
+- `date` and `go_out` are **reverse coded** (1 = several times a week, 7 = almost never).
+- `field_cd`, `career_c`, `goal`, `race` are labels stored as numbers → one-hot, never integers.
+- `income` is missing for 62% of Latino and 60% of Asian participants against 31% of Black ones: the
+  missingness itself carries information about origin, so it has its own flag.
+- Only the `*4_1` preference block changes scale (absent in waves 1–5, 1–10 in waves 6–9). `*1_1` and
+  `*2_1` are on the 100-point scale everywhere, contrary to what the codebook suggests.
 
-## Method choices
-- Split **by wave** (GroupKFold) — never split rows of the same pair or wave across train/test.
-- Feature engineering = simple, mostly profile comparisons (age gap, shared interests, same field, preference alignment…).
+## Method
+- **Split on `wave` with `StratifiedGroupKFold(5)`**, fold stored in `model_table.csv`. Every participant
+  attends exactly one wave, so it is the only grouping that keeps a person on one side. A random split
+  gives 0.72 ROC-AUC against 0.60 — the gap is the model recognising people, not skill.
+- **No feature constant within a wave** (that column is the wave under another name).
+- Encoding with `OneHotEncoder` **inside the pipeline**, fitted on the training fold only.
+- Column names: `her_` / `his_` for a person, a plain word for the pair, one underscore at most.
 
 ## Layout
-`data/` · `docs/` · `notebooks/` (numbered: 01_eda, 02_prep, …) · `src/` (shared code) · `app/` (Streamlit) · `models/` · `reports/figures/` · `assets/logo/`
+`data/raw` · `data/processed` (committed) · `docs/` · `notebooks/` (01_eda, 02_features, 03_models,
+03b_tabpfn_colab) · `app/` (Streamlit) · `reports/figures/` · `assets/logo/`
+
+Notebooks are self-contained — no shared module — and move to the repo root on their first cell.
 
 ## Environment
-Python 3.11, `.venv`, `pip install -r requirements.txt`. macOS: `brew install libomp` for XGBoost.
+Python 3.11 in `.venv`, created with `uv` (no Homebrew on the machine). XGBoost needs `libomp`; see the README.
+
+## Open
+- **Cost matrix** — undecided, and economic performance is graded.
+- Notebooks 04 (interpretability), 05 (stability), 06 (fairness) read `oof_predictions.csv` and refit nothing.
