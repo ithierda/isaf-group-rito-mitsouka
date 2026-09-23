@@ -5,6 +5,7 @@
 - Client: **Les Rito Mitsouka**, a fictional dating app deciding which pairs of profiles to recommend.
 - Task: predict **`match`** (both said yes). Binary, 16.5% positives.
 - Three models: **lasso logistic regression** (white box), **XGBoost**, **TabPFN** (foundation model, run on Colab).
+- All three predict **the two decisions separately and multiply them**, not `match` directly.
 - Four dimensions: performance (statistical + economic), interpretability, stability, fairness.
 - **Protected attribute: ethnicity.** Goal: check the recommendation engine is not racially biased.
 - Deliverables (Mon 28/09, 09:40): slides, notebooks, Streamlit app.
@@ -33,6 +34,10 @@
 - **No feature constant within a wave** (that column is the wave under another name).
 - Encoding with `OneHotEncoder` **inside the pipeline**, fitted on the training fold only.
 - Column names: `her_` / `his_` for a person, a plain word for the pair, one underscore at most.
+- **Two-stage target.** A match is she says yes and he says yes. Each pair becomes two decision rows
+  (`self_` = the decider, `other_` = the partner, plus a `female` flag), the model predicts `dec`, and
+  the two probabilities are multiplied. 8,368 rows, target at 37%/47% instead of a 16.5% joint event.
+  Top decile: 28% matches against 22% predicting `match` directly. `dec` is a target, never a feature.
 
 ## Layout
 `data/raw` · `data/processed` (committed) · `docs/` · `notebooks/` (01_eda, 02_features, 03_models,
@@ -46,3 +51,4 @@ Python 3.11 in `.venv`, created with `uv` (no Homebrew on the machine). XGBoost 
 ## Open
 - **Cost matrix** — undecided, and economic performance is graded.
 - Notebooks 04 (interpretability), 05 (stability), 06 (fairness) read `oof_predictions.csv` and refit nothing.
+  There, `logit` and `xgboost` are the two-stage models; `logit_direct` / `xgboost_direct` are the baseline.

@@ -63,11 +63,12 @@ itself if you launched Jupyter from `notebooks/`.
 |---|---|---|
 | `01_eda.ipynb` | The raw data: how it is organised, which columns leak, what the variables mean and how they are coded. Builds one row per pair. | `data/processed/pairs.csv` (4,184 × 138) |
 | `02_features.ipynb` | Cleaning, comparison features, readable names, encoding, and the fold assignment. | `data/processed/model_table.csv` (4,184 × 62) |
-| `03_models.ipynb` | Logistic regression and XGBoost on the folds from 02. Saves the out-of-fold predictions. | `data/processed/oof_predictions.csv` |
+| `03_models.ipynb` | Logistic regression and XGBoost, predicting the two decisions and multiplying them. Saves the out-of-fold predictions. | `data/processed/oof_predictions.csv` |
 | `03b_tabpfn_colab.ipynb` | TabPFN. Runs on Colab with a GPU — see the header of the notebook. | `tabpfn_oof.csv`, to drop into `data/processed/` |
 
 Notebooks 04 to 06 (interpretability, stability, fairness) read `oof_predictions.csv` and refit
-nothing, so they can be written in parallel.
+nothing, so they can be written in parallel. In that file `logit` and `xgboost` are the two-stage
+models we keep, `logit_direct` and `xgboost_direct` the baseline.
 
 ## Method, decided so far
 
@@ -83,6 +84,11 @@ nothing, so they can be written in parallel.
   tree will use it to memorise an evening's match rate.
 - **Ethnicity stays in the table** on both sides. The fairness notebook needs it to compare a model
   fitted with it against one fitted without.
+- **A match is two decisions, not one event.** Every model predicts `her_dec` and `his_dec`
+  separately and multiplies them, rather than predicting `match` directly: 8,368 decision rows
+  instead of 4,184 pairs, and a target at 37% / 47% instead of 16.5%. It costs a little ROC-AUC and
+  gains where the app operates — 28% of the top decile match, against 22% predicting `match`
+  directly. `03_models` keeps both so the choice can be defended.
 - **Readable column names**, set in 02: `her_` / `his_` for a person, a plain word for a property of
   the pair, one underscore at most (`her_racepref`, `agegap`, `samefield`, `her_fit`).
 
