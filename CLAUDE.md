@@ -41,14 +41,29 @@
   the two probabilities are multiplied. 8,368 rows, target at 37%/47% instead of a 16.5% joint event.
   Top decile: 30% matches against 23% predicting `match` directly. `dec` is a target, never a feature.
 
+## Conventions in 04, 05, 06
+- **Ŷ = 1 means "in the top decile"**, never a 0.5 threshold: at a 16.5% base rate with a product of
+  two probabilities, no pair scores above 0.5 and every threshold metric is degenerate. Sensitivity
+  at 5% and 20%.
+- **One `bootstrap_ci(frame, metric, n_boot, stratify_by="wave")`**, copied into each notebook. A gap
+  narrower than its interval is written up as inconclusive, not as a finding.
+- **The two stages add up in logs.** SHAP is computed per stage on the log-odds; `Σφ + φ₀ = margin`
+  holds, the probability product does not decompose additively.
+- 04 rebuilds the pipelines from 03: the **final model** (all 8,368 decisions) is what we explain,
+  the **five fold models** are what we measure performance on. 05 and 06 refit by design.
+
 ## Layout
 `data/raw` · `data/processed` (committed) · `docs/` · `notebooks/` (01_eda, 02_features, 03_models,
-03b_tabpfn_colab) · `app/` (Streamlit) · `reports/figures/` · `assets/logo/`
+03b_tabpfn_colab, 04_interpretability, 05_stability, 06_fairness) · `app/` (Streamlit) ·
+`reports/figures/` · `reports/tables/` · `assets/logo/`
 
 Notebooks are self-contained — no shared module — and move to the repo root on their first cell.
 
 ## Environment
 Python 3.11 in `.venv`, created with `uv` (no Homebrew on the machine). XGBoost needs `libomp`; see the README.
+- **iCloud evicts `.venv`** when the repo lives under `~/Documents`: imports then hang for minutes.
+- `XPER` (the professor's package) is in `requirements.txt`. Two traps: `kernel=False` is broken in
+  0.0.92, and `N_coalition_sampled` must stay at or below `2**p - 2` or it raises `IndexError`.
 
 ## Open
 - **Cost matrix** — undecided, and economic performance is graded.

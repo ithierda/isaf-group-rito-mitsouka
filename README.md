@@ -21,7 +21,9 @@ economic), **interpretability**, **stability** and **fairness** (protected attri
 │   └── processed/  Tables the notebooks produce — committed, so nobody has to rebuild them
 ├── docs/           Codebook of the dataset
 ├── notebooks/      The analysis, numbered and self-contained
-└── reports/figures Figures for the slides
+└── reports/
+    ├── figures/    Figures for the slides
+    └── tables/     The tables the notebooks export, as CSV
 ```
 
 The tables in `data/processed/` are **in the repository**. Pull and they are there: you do not need to
@@ -52,6 +54,11 @@ In VS Code: *Python: Select Interpreter* → `.venv`, and pick the **Python (isa
 > ```bash
 > cp /opt/anaconda3/lib/libomp.dylib "$(python -c 'import sys; print(sys.base_prefix)')/lib/"
 > ```
+>
+> **If the repository sits in an iCloud-synced folder** (anything under `~/Documents` with "Optimise
+> Mac Storage" on), iCloud will evict `.venv` and every `import pandas` then waits on a download —
+> minutes per cell. Either keep the venv outside iCloud (`uv venv --python 3.11 ~/.venvs/isaf`) or
+> right-click the folder and choose *Keep Downloaded*.
 
 ## Notebooks
 
@@ -65,10 +72,20 @@ itself if you launched Jupyter from `notebooks/`.
 | `02_features.ipynb` | Cleaning, comparison features, readable names, encoding, and the fold assignment. | `data/processed/model_table.csv` (4,184 × 66) |
 | `03_models.ipynb` | Logistic regression and XGBoost, predicting the two decisions and multiplying them. Saves the out-of-fold predictions. | `data/processed/oof_predictions.csv` |
 | `03b_tabpfn_colab.ipynb` | TabPFN. Runs on Colab with a GPU — see the header of the notebook. | `tabpfn_oof.csv`, to drop into `data/processed/` |
+| `04_interpretability.ipynb` | Coefficients and marginal effects, impurity importance, PDP and ICE, SHAP, permutation importance, XPER, and the economic comparison against random matching. | figures and tables in `reports/` |
+| `05_stability.ipynb` | Distance between 25 versions of each model, stability of the recommended list, leave-one-wave-out, and the cost of imposing stability. | figures and tables in `reports/` |
+| `06_fairness.ipynb` | Statistical parity, conditional parity (Cochran–Mantel–Haenszel), amplification, mitigation, proxy recovery, equivalence testing. | figures and tables in `reports/` |
 
-Notebooks 04 to 06 (interpretability, stability, fairness) read `oof_predictions.csv` and refit
-nothing, so they can be written in parallel. In that file `logit` and `xgboost` are the two-stage
-models we keep, `logit_direct` and `xgboost_direct` the baseline.
+Notebooks 04 to 06 are independent of each other and can be written in parallel. They all read
+`oof_predictions.csv`, where `logit` and `xgboost` are the two-stage models we keep and
+`logit_direct` / `xgboost_direct` the baseline. They also rebuild the pipelines from 03 — an
+explanation, a distance between models and a mitigation variant all need a fitted model, not a
+column of scores — but the recipe is copied from 03 unchanged, and it takes a few seconds.
+
+**Three conventions hold across 04, 05 and 06.** A decision is "in the top decile", not a 0.5
+threshold, because no pair ever scores above 0.5 at a 16.5% base rate. Every number carries a
+bootstrap interval resampled within waves, and a gap smaller than its interval is reported as
+inconclusive. The two stages are combined in logs, never on the probability scale.
 
 ## Method, decided so far
 
