@@ -14,7 +14,7 @@ economic), **interpretability**, **stability** and **fairness** (protected attri
 ## Repository layout
 
 ```
-├── app/            Streamlit app for the client
+├── app/            Streamlit app for the client (streamlit run app/streamlit_app.py)
 ├── assets/logo/    Client logo (PNG + SVG)
 ├── data/
 │   ├── raw/        Original dataset (never modified)
@@ -108,6 +108,21 @@ inconclusive. The two stages are combined in logs, never on the probability scal
   directly. `03_models` keeps both so the choice can be defended.
 - **Readable column names**, set in 02: `her_` / `his_` for a person, a plain word for a property of
   the pair, one underscore at most (`her_racepref`, `agegap`, `samefield`, `her_fit`).
+
+## The app
+
+```bash
+streamlit run app/streamlit_app.py
+```
+
+Written for the client, not for us: matches, money and fairness, with the technical metrics
+explained in a line each. Four tabs — *Does it work? · How it decides · What it is worth · Is it
+fair?* — and two controls that drive every number on the page: which engines to compare, and how
+much of the catalogue the app would show.
+
+It refits nothing. Performance, economics and fairness are recomputed live from
+`oof_predictions.csv` at whatever shortlist length you pick; interpretability and stability are
+read from `reports/`. TabPFN appears on its own once `tabpfn_oof.csv` is in `data/processed/`.
 
 ## Data
 
