@@ -76,7 +76,7 @@ This block is the strongest technical content in the deck. Do not rush it.
 - Diagram: pair → (she decides | he decides) → p̂(her yes) × p̂(his yes).
 - Why: 16.5% joint event vs **37% / 47%** on each side. 8,368 decision rows instead of 4,184 pairs.
 - The payoff, `reports/tables/04_economic_performance.csv`:
-  **top decile match rate 29.9% two-stage vs 23.0% predicting the match directly.**
+  **top decile match rate 29.8% two-stage vs 23.6% predicting the match directly.**
 - The line the jury will like: **ROC-AUC ranks the models in almost the reverse order of the
   metric the client cares about.** Direct XGBoost has the best ROC-AUC (0.589) and the worst
   top decile (0.230).
@@ -107,17 +107,40 @@ This block is the strongest technical content in the deck. Do not rush it.
   interval. We stopped rather than tune on noise.
 
 ### Slide 7 — Economic performance (60 s)
-- No cost matrix, and say so deliberately: *what a match is worth against what a wasted
-  recommendation costs is the client's number, not ours.* What we can price is the baseline
-  the client actually has on day one: showing pairs at random.
-- The headline: **299 matches per 1,000 pairs shown, against 165 at random — lift 1.81.**
-- Robustness, from `04_economic_performance.csv`: still **235 per 1,000 at the top 20%**, so the
-  gain is not an artefact of a very short list.
-- Two caveats the slide must state (a jury hunts exactly for these):
-  - **The snowball effect is an argument, not a measurement.** Nobody in this data attends twice,
-    so we cannot put a figure on "more matches → more use → more data".
-  - **A lift can be bought with exclusion.** A model that quietly stops recommending one group
-    also raises the top-decile rate. Slide 13–15 checks that. **This is your bridge into fairness.**
+- The baseline the client has on day one is showing pairs at random. Everything on this slide is
+  the difference against it, per 1,000 recommendations.
+- The headline, one line, large: **+133 matches per 1,000 recommendations** — 298 against 165.
+- The table, from `04_economic_performance.csv`, three rows:
+
+  | List shown | Matches /1,000 | Extra /1,000 | Extra matches over the catalogue |
+  |---|---|---|---|
+  | top 5% | 314 | +149 | +31 |
+  | top 10% | 298 | +133 | +56 |
+  | top 20% | 235 | +70 | +59 |
+
+- **Value per 1,000 recommendations = 133 × v**, v = net value of one additional match. One number
+  for the client to supply, out of their own business plan. Say it in exactly one sentence.
+- The decision those numbers drive is **how long the list should be**, and the last two columns pull
+  in opposite directions: a short list is more efficient per slot, a long list delivers more matches
+  in total. Where to sit depends on what a wasted recommendation costs in user fatigue — a product
+  decision, and a good thing to hand back to the jury.
+- One caveat, said in a breath: more matches → more use → more data → better matches. Nobody in this
+  dataset attends twice, so that loop is a reason to invest, not a figure we quote.
+- **Unit economics, from `04_unit_economics.csv`** — two lines, they land hard:
+  - **Cost:** scoring a pair takes 2.8 µs, so the engine runs for **$0.04 per 1,000 users per year**.
+    It cannot be priced on cost; it is priced on value. The real expense is data collection and the
+    fairness monitoring, in person-days.
+  - **Value:** at $15/month, 12% conversion (market band 8–15%: Tinder 8.6M payers / ~60M users,
+    Grindr 8.4%) and one extra paid month per subscriber, **$1,800 per 1,000 users per year** —
+    about 40,000× the cost. `c` (conversion) and `r` (extra paid months) are the client's numbers,
+    and saying so is stronger than inventing them.
+- Say the transferable quantity out loud: **×1.81 at equal recommendation volume.** The absolute
+  16.5% base rate does not transfer — these people had just met face to face. This is also the
+  number the app shows the user in-product: *"recommended profiles are 1.8× more likely to match"*.
+  Add the honest qualifier in one breath: it is an offline cold-start estimate, and the client has
+  to confirm it with an A/B test before advertising it.
+- **Bridge into fairness:** a lift can be bought with exclusion. A model that quietly stops
+  recommending one group also raises the top-decile rate. Slides 13–15 check exactly that.
 
 ---
 
@@ -270,7 +293,7 @@ One matrix, 3 models × 4 dimensions, ticks and crosses. This is the slide the j
 | | logit (two-stage) | XGBoost | TabPFN |
 |---|---|---|---|
 | **Statistical perf.** | 0.227 PR-AUC | 0.218 | *fill* |
-| **Economic perf.** | 299 / 1,000 (×1.81) | 286 / 1,000 | *fill* |
+| **Economic perf.** | 298 / 1,000 (×1.81) | 286 / 1,000 | *fill* |
 | **Interpretability** | 46 readable coefficients | SHAP only, 4 methods disagree | opaque, no native explanation |
 | **Stability (model)** | 0.56 | **0.30** | *fill* |
 | **Stability (the list)** | **0.48 Jaccard** | 0.44 | *fill* |
@@ -330,7 +353,7 @@ Build these — they are where the 10 minutes of Q&A get won:
 1. **"Your AUC is 0.59, that is barely better than a coin flip."**
    → It is honest, and it is the number the product operates at. On a random split the same model
    reads 0.715, and the difference is memorisation. What matters commercially is the top decile:
-   29.9% against a 16.5% base rate, a lift of 1.81.
+   29.8% against a 16.5% base rate, a lift of 1.81.
 2. **"Why top decile and not a 0.5 threshold?"**
    → At a 16.5% base rate with a product of two probabilities, no pair scores above 0.5. A threshold
    classifier predicts zero everywhere and every confusion-matrix metric is degenerate. The app
@@ -351,13 +374,22 @@ Build these — they are where the 10 minutes of Q&A get won:
    → Which is why every table carries the group size, and why we ran TOST: for the three small
    groups we cannot certify equality at any tolerance below 10 points. We report that as absence
    of power, not as absence of a gap.
-7. **"Who did what?"**
+7. **"Where is your cost matrix?"**
+   → At a fixed top-K the list length is constant, so TP + FP = K and the cost collapses to
+   `const − (c_FP + c_FN)·TP`: every cost matrix ranks the models identically, and minimising cost
+   is maximising the top-K match rate, which is what we optimised. The costs matter for choosing K,
+   not for choosing the model — which is why we give the client the curve at 5/10/20% instead of a
+   number we invented.
+8. **"Who did what?"**
    → Have the answer ready. Every member must be able to defend any section: the brief says so
    explicitly and grades can vary across team members.
 
 ## Before Monday
 - [ ] Run 03b on Colab, merge `tabpfn_oof.csv`, fill every *fill* cell above.
 - [ ] Build the amplification chart (41% vs 48% + CI) — no PNG exists yet.
+- [ ] Slide 16: the price of fairness — full model 298 matches /1,000 against 248 for the mitigated
+      one, so removing the amplification costs ≈50 matches per 1,000 recommendations. Number printed
+      at the end of section 4 of `06_fairness.ipynb`; convert to dollars with the slide 7 table.
 - [ ] Build the top-decile chart with error bars for slide 6.
 - [ ] Streamlit app + slide 18.
 - [ ] Two full rehearsals with a timer. Target 13:30.

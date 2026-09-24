@@ -1,0 +1,5 @@
+subscription price,+0.25 months,+0.5 months,+1 month,+2 months
+$10/month,300,600,1200,2400
+$15/month,450,900,1800,3600
+$20/month,600,1200,2400,4800
+$30/month,900,1800,3600,7200
