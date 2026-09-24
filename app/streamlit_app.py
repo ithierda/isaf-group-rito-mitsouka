@@ -1,4 +1,4 @@
-"""Les Rito Mitsouka — what the recommendation engine does, for the client.
+"""Les Rito Mitsouka — the matching engine, for the client.
 
 Everything shown here is measured on pairs the model never saw during training, so it is what a
 brand new user would get. Run it from the repository root: streamlit run app/streamlit_app.py
@@ -16,7 +16,8 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 if not Path("data").is_dir():
     os.chdir("..")
 
-BLUE, YELLOW, INK, GREY = "#1E34C8", "#FFD60A", "#101014", "#B8BCC8"
+YELLOW, WHITE, SKY, PALE = "#FFD60A", "#FFFFFF", "#7FE3FF", "#9AA6E8"
+SERIES = [YELLOW, WHITE, SKY, PALE]
 RACE = {1: "Black", 2: "White", 3: "Latino", 4: "Asian", 5: "Native American", 6: "Other"}
 NAMES = {"logit": "Logistic regression", "xgboost": "XGBoost", "tabpfn": "TabPFN",
          "logit_direct": "Logistic regression, direct", "xgboost_direct": "XGBoost, direct"}
@@ -40,13 +41,27 @@ def shown(scores, k):
     return (scores >= np.quantile(scores, 1 - k)).to_numpy()
 
 
+def canvas(width, height):
+    """A matplotlib figure that sits on the blue background instead of a white box."""
+    figure, axis = plt.subplots(figsize=(width, height))
+    figure.patch.set_alpha(0)
+    axis.set_facecolor("none")
+    axis.tick_params(colors=WHITE)
+    for side in ["bottom", "left"]:
+        axis.spines[side].set_color(PALE)
+    axis.spines[["top", "right"]].set_visible(False)
+    axis.xaxis.label.set_color(WHITE)
+    axis.yaxis.label.set_color(WHITE)
+    return figure, axis
+
+
 oof, table, sides = load()
 available = [c for c in NAMES if c in oof.columns]
 base = oof.match.mean()
 
 logo, headline = st.columns([1, 2])
 logo.image("assets/logo/horizontal_blue.png")
-headline.markdown(f"## Which pairs should we put in front of each other?\n"
+headline.markdown(f"## The matching engine, in numbers\n"
                   f"Measured on **{len(oof):,} real dates** the engine had never seen. "
                   f"Left to chance, **{base:.1%}** of pairs match.")
 
@@ -69,35 +84,64 @@ scored = {m: pd.DataFrame({"match": oof.match, "shown": shown(oof[m], k)}) for m
 rate = {m: d.match[d.shown].mean() for m, d in scored.items()}
 best = max(models, key=lambda m: rate[m])
 
-results, engine, worth, fair = st.tabs(
-    ["Does it work?", "How it decides", "What it is worth", "Is it fair?"])
+PRICE, CONVERSION, MONTHS = 15, 0.12, 1.0
+headline_value = 1000 * CONVERSION * PRICE * MONTHS
 
-with results:
+st.markdown("#### Headline")
+a, b, c, d = st.columns(4)
+a.metric("Matches per 1,000 shown", f"{1000 * rate[best]:.0f}",
+         f"{1000 * (rate[best] - base):+.0f} vs chance")
+b.metric("Better than chance", f"{rate[best] / base:.2f}×")
+c.metric("Worth per 1,000 users a year", f"${headline_value:,.0f}",
+         help="At $15 a month, 12% of users paying, one extra paid month each. "
+              "Change the assumptions in 'What it is worth'.")
+d.metric("Costs to run, same basis", f"${COST_PER_1000_USERS_PER_YEAR:.2f}",
+         f"{headline_value / COST_PER_1000_USERS_PER_YEAR:,.0f}× return", delta_color="off")
+st.caption(f"Best of the engines you selected: **{NAMES[best]}**, at a {k:.0%} shortlist.")
+
+compare, engine, worth, fair = st.tabs(
+    ["Compare the engines", "How it decides", "What it is worth", "Is it fair?"])
+
+with compare:
     st.subheader("Matches per 1,000 pairs shown")
-    columns = st.columns(len(models) + 1)
-    columns[0].metric("Left to chance", f"{1000 * base:.0f}")
-    for column, m in zip(columns[1:], models):
-        column.metric(NAMES[m], f"{1000 * rate[m]:.0f}", f"{1000 * (rate[m] - base):+.0f} vs chance")
-    st.markdown(f"At a {k:.0%} shortlist, {NAMES[best]} turns {1000 * base:.0f} matches per thousand "
-                f"recommendations into {1000 * rate[best]:.0f} — **{rate[best] / base:.2f}× better "
-                f"than picking at random.** That multiplier is the promise the app can make to a "
-                f"new user.")
+    figure, axis = plt.subplots(figsize=(8, 0.6 + 0.5 * len(models)))
+    figure.patch.set_alpha(0)
+    axis.set_facecolor("none")
+    labels = ["Left to chance"] + [NAMES[m] for m in models]
+    values = [1000 * base] + [1000 * rate[m] for m in models]
+    bars = axis.barh(labels, values, color=[PALE] + SERIES[:len(models)])
+    axis.bar_label(bars, fmt="%.0f", padding=4, color=WHITE, fontsize=11)
+    axis.set_xlim(0, max(values) * 1.18)
+    axis.tick_params(colors=WHITE)
+    axis.get_xaxis().set_visible(False)
+    axis.spines[:].set_visible(False)
+    st.pyplot(figure)
 
+    st.subheader("How the advantage changes with the length of the shortlist")
     steps = np.arange(0.02, 0.32, 0.02)
-    figure, axis = plt.subplots(figsize=(8, 3.2))
-    for m, colour in zip(models, [BLUE, YELLOW, INK, GREY]):
+    figure, axis = canvas(8, 3.4)
+    for m, colour in zip(models, SERIES):
         axis.plot([f"{s:.0%}" for s in steps],
                   [oof.match[shown(oof[m], s)].mean() / base for s in steps],
                   "o-", color=colour, label=NAMES[m], linewidth=2)
-    axis.axhline(1, color=GREY, linestyle="--", linewidth=1)
+    axis.axhline(1, color=PALE, linestyle="--", linewidth=1)
+    here = f"{min(steps, key=lambda s: abs(s - k)):.0%}"        # snap to a point on the curve
+    axis.axvline(here, color=WHITE, alpha=0.16, linewidth=12, zorder=0)
+    axis.annotate("your setting", xy=(here, axis.get_ylim()[1]), color=WHITE, fontsize=8,
+                  ha="center", va="bottom", alpha=0.7)
     axis.set_ylabel("times better than chance")
     axis.set_xlabel("share of the catalogue shown")
-    axis.legend(frameon=False)
-    axis.spines[["top", "right"]].set_visible(False)
+    axis.legend(frameon=False, labelcolor=WHITE)
     st.pyplot(figure)
-    st.caption("The shorter the shortlist, the better each recommendation — and the fewer matches "
-               "in total. Where to sit on this curve depends on what a bad recommendation costs "
-               "you in user patience.")
+    st.markdown(
+        "**Read it left to right.** A short shortlist is the most accurate — the engine is putting "
+        "forward only the pairs it is surest about — but it delivers few matches in total. Stretch "
+        "the list and every extra pair is a little less likely to work, so the curve falls towards "
+        "1.00, which is chance. The highlighted band is where your slider sits.\n\n"
+        "**Where the engines differ.** They are close, and that is the honest finding: on this data "
+        "no engine is clearly ahead of the other. What separates them is not accuracy but what "
+        "comes after — whether the recommendation can be explained, whether it survives "
+        "retraining, and whether it treats groups evenly. The next three tabs.")
 
     st.subheader("The standard scores, for the record")
     scores = pd.DataFrame({
@@ -106,29 +150,30 @@ with results:
                    f"Match rate in the top {k:.0%}": rate[m],
                    "Lift over chance": rate[m] / base} for m in models}).round(3)
     st.dataframe(scores, width="stretch")
-    st.caption("**PR-AUC** is the one to read: only 16.5% of pairs match, and it measures how well "
-               "the engine finds those few. **ROC-AUC** looks low on purpose — it scores the whole "
-               "ranking, including the bottom, which the app never shows. Predicting attraction "
-               "between two strangers from a questionnaire is genuinely hard; what matters "
-               "commercially is the top of the list.")
+    left, right = st.columns(2)
+    left.markdown("**PR-AUC** — the one to read. Only 16.5% of pairs match, and this measures how "
+                  "well the engine finds those few rather than how well it recognises the many that "
+                  "do not. Higher is better; chance is 0.165.")
+    right.markdown("**ROC-AUC** — looks low on purpose. It scores the entire ranking, bottom "
+                   "included, and the app never shows the bottom. Predicting attraction between two "
+                   "strangers from a questionnaire is genuinely hard; what pays is the top of the "
+                   "list, which is the row above.")
 
 with engine:
     st.subheader("What makes two people say yes")
     st.markdown("The engine predicts **each person's decision separately and multiplies the two**, "
                 "because a match is she says yes *and* he says yes. Below are the answers that move "
-                "that decision most, in percentage points of probability, for a one standard "
-                "deviation change.")
+                "that decision most, in percentage points, for a one standard deviation change.")
     coefficients = pd.read_csv("reports/tables/04_white_box_coefficients.csv", index_col=0)
     effects = coefficients[coefficients.Step == "+1 sd"].head(10)["Marginal Effect (%)"].iloc[::-1]
-    figure, axis = plt.subplots(figsize=(7, 4))
-    axis.barh(effects.index, effects, color=np.where(effects > 0, BLUE, YELLOW))
-    axis.axvline(0, color=INK, linewidth=0.8)
+    figure, axis = canvas(7, 4)
+    axis.barh(effects.index, effects, color=np.where(effects > 0, YELLOW, SKY))
+    axis.axvline(0, color=WHITE, linewidth=0.8)
     axis.set_xlabel("change in the chance of a yes (percentage points)")
-    axis.spines[["top", "right"]].set_visible(False)
     st.pyplot(figure)
     st.caption("No single answer moves the decision by more than four points. The engine works by "
-               "adding up many small signals, which is also why it can be read line by line — "
-               "every recommendation comes with the reasons behind it.")
+               "adding up many small signals, which is also why it can be read line by line — every "
+               "recommendation comes with the reasons behind it.")
 
     st.subheader("Does it say the same thing every time?")
     stability = pd.read_csv("reports/tables/05_ranking_stability.csv")
@@ -140,18 +185,16 @@ with engine:
     st.caption("Retrain on a different sample of dates and about half the shortlist changes. That "
                "is normal at this sample size, and it is the reason to refresh recommendations "
                "regularly rather than present them as a verdict.")
-    st.image("reports/figures/04_shap_beeswarm.png",
-             caption="Each dot is one date. The engine's reasoning can be opened up one "
-                     "recommendation at a time.")
 
 with worth:
     st.subheader("What the engine is worth to you")
-    st.markdown("Two numbers are yours, not ours: how many of your users pay, and how much longer "
-                "a satisfied user stays. Set them here.")
+    st.markdown("Two numbers are yours, not ours: how many of your users pay, and how much longer a "
+                "satisfied user stays. Set them here and the figures follow.")
     left, middle, right = st.columns(3)
-    price = left.slider("Subscription price, per month", 5, 40, 15, 1, format="$%d")
-    conversion = middle.slider("Share of users on a paid plan", 5, 25, 12, 1, format="%d%%") / 100
-    months = right.slider("Extra paid months per subscriber per year", 0.0, 3.0, 1.0, 0.25)
+    price = left.slider("Subscription price, per month", 5, 40, PRICE, 1, format="$%d")
+    conversion = middle.slider("Share of users on a paid plan", 5, 25,
+                               int(CONVERSION * 100), 1, format="%d%%") / 100
+    months = right.slider("Extra paid months per subscriber per year", 0.0, 3.0, MONTHS, 0.25)
     value = 1000 * conversion * price * months
 
     left, middle, right = st.columns(3)
@@ -172,12 +215,11 @@ with fair:
     seen = sides.notna()
     selection = person[seen].groupby(sides[seen]).mean().sort_values()
 
-    figure, axis = plt.subplots(figsize=(7, 3))
-    axis.barh(selection.index, 100 * selection, color=BLUE)
+    figure, axis = canvas(7, 3)
+    axis.barh(selection.index, 100 * selection, color=SKY)
     axis.axvline(100 * k, color=YELLOW, linewidth=2.5, label="equal treatment")
     axis.set_xlabel("share of a group's dates that get recommended (%)")
-    axis.legend(frameon=False)
-    axis.spines[["top", "right"]].set_visible(False)
+    axis.legend(frameon=False, labelcolor=WHITE)
     st.pyplot(figure)
     st.markdown(f"If the engine treated every group the same, all bars would sit on the yellow "
                 f"line. The widest gap is **{100 * (selection.max() - selection.min()):.1f} "
@@ -191,12 +233,11 @@ with fair:
     right.metric("Among the pairs that really matched",
                  f"{100 * same[oof.match == 1].mean():.0f}%",
                  f"engine is {amplification:.2f}× more segregated", delta_color="inverse")
-    st.caption("People do prefer their own background — that is in the data, not in the model. "
-               "What matters is whether the engine **exaggerates** it. Above 1.00 it does. Removing "
-               "the effect entirely is possible, and costs about 50 matches per 1,000 "
-               "recommendations. Dropping ethnicity from the model does not work: the engine "
-               "rebuilds it from income, going-out habits and self-rated attractiveness, and the "
-               "segregation gets worse.")
+    st.caption("People do prefer their own background — that is in the data, not in the model. What "
+               "matters is whether the engine **exaggerates** it. Above 1.00 it does. Removing the "
+               "effect entirely is possible, and costs about 50 matches per 1,000 recommendations. "
+               "Dropping ethnicity from the model does not work: the engine rebuilds it from "
+               "income, going-out habits and self-rated attractiveness, and segregation gets worse.")
 
 st.divider()
 st.caption("Out-of-fold results on the Speed Dating Experiment (Fisman, Iyengar, Kamenica & "

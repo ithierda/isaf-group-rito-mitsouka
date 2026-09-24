@@ -115,10 +115,10 @@ inconclusive. The two stages are combined in logs, never on the probability scal
 streamlit run app/streamlit_app.py
 ```
 
-Written for the client, not for us: matches, money and fairness, with the technical metrics
-explained in a line each. Four tabs — *Does it work? · How it decides · What it is worth · Is it
-fair?* — and two controls that drive every number on the page: which engines to compare, and how
-much of the catalogue the app would show.
+Written for the client, not for us: matches, money and fairness, with the technical metrics kept
+but explained in a line each. A headline row of four figures, then four tabs — *Compare the
+engines · How it decides · What it is worth · Is it fair?* — and two controls at the top that drive
+everything below: which engines to compare, and how much of the catalogue the app would show.
 
 It refits nothing. Performance, economics and fairness are recomputed live from
 `oof_predictions.csv` at whatever shortlist length you pick; interpretability and stability are
