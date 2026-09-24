@@ -2,9 +2,9 @@
 
 ## `raw/speed_dating.csv`
 
-**Speed Dating Experiment** — Fisman, Iyengar, Kamenica & Simonson (2006),
+**Speed Dating Experiment**, Fisman, Iyengar, Kamenica & Simonson (2006),
 *Gender Differences in Mate Selection: Evidence from a Speed Dating Experiment*, QJE.
-Collected at Columbia Business School, 2002–2004. Public copy of the Kaggle
+Collected at Columbia Business School, 2002 to 2004. Public copy of the Kaggle
 "Speed Dating Experiment" file (identical values).
 
 | | |
@@ -12,8 +12,8 @@ Collected at Columbia Business School, 2002–2004. Public copy of the Kaggle
 | Rows | 8,378 (one row = one participant's view of one 4-minute date) |
 | Columns | 195 |
 | Participants | 551 (`iid`), across 21 sessions (`wave`) |
-| Target | `match` = 1 if both said yes — 1,380 positives (16.5%) |
-| Encoding | Mac Roman (a few accented names) — read with `encoding="mac_roman"` |
+| Target | `match` = 1 if both said yes, 1,380 positives (16.5%) |
+| Encoding | Mac Roman (a few accented names), read with `encoding="mac_roman"` |
 
 Load with:
 

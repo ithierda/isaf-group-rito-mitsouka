@@ -1,5 +1,5 @@
 model,versions,Jaccard on the top decile,Kendall tau on the full ranking
-logit,fold,0.482,0.657
+logit,fold,0.484,0.658
 logit,boot,0.464,0.645
 xgboost,fold,0.435,0.562
 xgboost,boot,0.385,0.556
