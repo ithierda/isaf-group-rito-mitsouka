@@ -19,6 +19,35 @@ if not Path("data").is_dir():
 YELLOW, WHITE, SKY, PALE = "#FFD60A", "#FFFFFF", "#7FE3FF", "#9AA6E8"
 SERIES = [YELLOW, WHITE, SKY, PALE]
 RACE = {1: "Black", 2: "White", 3: "Latino", 4: "Asian", 5: "Native American", 6: "Other"}
+TRAIT = {"selfintel": "thinks they are intelligent", "selfattr": "thinks they are good looking",
+         "selfamb": "thinks they are ambitious", "selffun": "thinks they are fun",
+         "selfsinc": "thinks they are sincere", "optimism": "expects a good evening",
+         "wantshar": "wants shared interests", "wantsinc": "wants someone sincere",
+         "wantattr": "wants someone attractive", "wantamb": "wants someone ambitious",
+         "wantintel": "wants someone intelligent", "wantfun": "wants someone fun",
+         "datefreq": "dates rarely", "outfreq": "goes out rarely",
+         "racepref": "cares about background", "religpref": "cares about religion",
+         "income": "earns more", "age": "is older", "noincome": "left income blank",
+         "fit": "got what they asked for"}
+PAIR_FEATURE = {"raceclash": "One cares about background, and the pair is mixed",
+                "samerace": "Same background", "samefield": "Same field of study",
+                "samecareer": "Same career", "agegap": "Age difference",
+                "agediff": "Age difference", "interests": "How alike their interests are",
+                "passions": "Shared passions", "fitmin": "The worse of the two fits",
+                "outgap": "Different going out habits", "dategap": "Different dating habits",
+                "olderwoman": "She is older", "racepref_max": "At least one cares about background",
+                "religpref_max": "At least one cares about religion",
+                "female": "The decider is the woman"}
+
+
+def plain(column):
+    """Turn a model column name into something a client can read."""
+    if column in PAIR_FEATURE:
+        return PAIR_FEATURE[column]
+    who, _, trait = column.partition("_")
+    if who in {"self", "other"} and trait in TRAIT:
+        return f"{'Themselves' if who == 'self' else 'Partner'}: {TRAIT[trait]}"
+    return column.replace("_", " ")
 NAMES = {"logit": "Logistic regression", "xgboost": "XGBoost", "tabpfn": "TabPFN",
          "logit_direct": "Logistic regression, direct", "xgboost_direct": "XGBoost, direct"}
 
@@ -32,6 +61,12 @@ st.markdown("""
 [data-testid="stMetricValue"] { font-size: 2.9rem; font-weight: 800; line-height: 1.1; }
 [data-testid="stMetricLabel"] p { font-size: 0.95rem; font-weight: 600; opacity: 0.85; }
 [data-testid="stMetricDelta"] { font-size: 1rem; font-weight: 600; }
+.stTabs [data-baseweb="tab-list"] { gap: 10px; border-bottom: none; }
+.stTabs [data-baseweb="tab"] {
+  background: rgba(255,255,255,0.10); border-radius: 10px 10px 0 0;
+  padding: 14px 26px; font-size: 1.1rem; font-weight: 700; }
+.stTabs [aria-selected="true"] { background: #FFD60A; color: #101014; }
+.stTabs [data-baseweb="tab-highlight"] { display: none; }
 </style>""", unsafe_allow_html=True)
 
 
@@ -96,8 +131,10 @@ headline_value = 1000 * CONVERSION * PRICE * MONTHS
 st.markdown("#### Headline")
 a, b, c, d = st.columns(4)
 a.metric("Matches per 1,000 shown", f"{1000 * rate[best]:.0f}",
-         f"{1000 * (rate[best] - base):+.0f} vs chance")
-b.metric("Better than chance", f"{rate[best] / base:.2f}×")
+         f"{1000 * (rate[best] - base):+.0f} vs chance",
+         help="Of 1,000 pairs the app puts in front of people, how many say yes to each other.")
+b.metric("Better than chance", f"{rate[best] / base:.2f}×",
+         help="That match rate divided by the 16.5% you get picking pairs at random.")
 c.metric("Worth per 1,000 users a year", f"${headline_value:,.0f}",
          help="At $15 a month, 12% of users paying, one extra paid month each. "
               "Change the assumptions in 'What it is worth'.")
@@ -124,15 +161,9 @@ with compare:
     st.pyplot(figure)
 
     st.subheader("How the advantage changes with the length of the shortlist")
-    st.markdown(
-        "**Read it left to right.** A short shortlist is the most accurate, because the engine is "
-        "putting forward only the pairs it is surest about, but it delivers few matches in total. "
-        "Stretch the list and every extra pair is a little less likely to work, so the curve falls "
-        "towards 1.00, which is chance. The highlighted band is where your slider sits.\n\n"
-        "**Where the engines differ.** They are close, and that is the honest finding: on this data "
-        "no engine is clearly ahead of the other. What separates them is not accuracy but what "
-        "comes after. Whether the recommendation can be explained, whether it survives retraining, "
-        "and whether it treats groups evenly. The next three tabs.")
+    st.markdown("A short list is picky and accurate. A long list finds more matches but each one "
+                "is less likely. At 1.00 the engine is no better than chance. The yellow band is "
+                "your slider.")
     steps = np.arange(0.02, 0.32, 0.02)
     figure, axis = canvas(8, 3.4)
     for m, colour in zip(models, SERIES):
@@ -149,15 +180,13 @@ with compare:
     axis.legend(frameon=False, labelcolor=WHITE)
     st.pyplot(figure)
 
-    st.subheader("The standard scores, for the record")
-    left, right = st.columns(2)
-    left.markdown("**PR-AUC** is the one to read. Only 16.5% of pairs match, and this measures how "
-                  "well the engine finds those few rather than how well it recognises the many that "
-                  "do not. Higher is better; chance is 0.165.")
-    right.markdown("**ROC-AUC** looks low on purpose. It scores the entire ranking, bottom "
-                   "included, and the app never shows the bottom. Predicting attraction between two "
-                   "strangers from a questionnaire is genuinely hard; what pays is the top of the "
-                   "list, which is the row below.")
+    st.subheader("The standard scores")
+    st.markdown(
+        f"| Metric | What it measures | Chance | Better is |\n|---|---|---|---|\n"
+        f"| PR-AUC | Finding the few pairs that match. **The one to read.** | 0.165 | higher |\n"
+        f"| ROC-AUC | The whole ranking, including the bottom the app never shows. | 0.500 | higher |\n"
+        f"| Match rate in the top {k:.0%} | Of the pairs shown, the share that match. | 16.5% | higher |\n"
+        f"| Lift over chance | That rate divided by 16.5%. | 1.00× | higher |")
     scores = pd.DataFrame({
         NAMES[m]: {"PR-AUC": average_precision_score(oof.match, oof[m]),
                    "ROC-AUC": roc_auc_score(oof.match, oof[m]),
@@ -167,24 +196,22 @@ with compare:
 
 with engine:
     st.subheader("What makes two people say yes")
-    st.markdown("The engine predicts **each person's decision separately and multiplies the two**, "
-                "because a match is she says yes *and* he says yes. Below are the answers that move "
-                "that decision most, in percentage points, for a one standard deviation change. No "
-                "single answer moves it by more than four points: the engine works by adding up many "
-                "small signals, which is also why it can be read line by line. Every recommendation "
-                "comes with the reasons behind it.")
+    st.markdown("A match is she says yes **and** he says yes, so the engine predicts each decision "
+                "and multiplies them. Below: how much each answer moves the chance of a yes, in "
+                "percentage points. Nothing moves it more than four points, so the engine adds up "
+                "many small signals rather than following one rule.")
     coefficients = pd.read_csv("reports/tables/04_white_box_coefficients.csv", index_col=0)
     effects = coefficients[coefficients.Step == "+1 sd"].head(10)["Marginal Effect (%)"].iloc[::-1]
-    figure, axis = canvas(7, 4)
+    effects.index = [plain(c) for c in effects.index]
+    figure, axis = canvas(8.5, 4)
     axis.barh(effects.index, effects, color=np.where(effects > 0, YELLOW, SKY))
     axis.axvline(0, color=WHITE, linewidth=0.8)
     axis.set_xlabel("change in the chance of a yes (percentage points)")
     st.pyplot(figure)
 
     st.subheader("Does it say the same thing every time?")
-    st.markdown("Retrain on a different sample of dates and about half the shortlist changes. That "
-                "is normal at this sample size, and it is the reason to refresh recommendations "
-                "regularly rather than present them as a verdict.")
+    st.markdown("Retrain on a different sample of dates and about half the shortlist changes. "
+                "Refresh recommendations regularly rather than present them as a verdict.")
     stability = pd.read_csv("reports/tables/05_ranking_stability.csv")
     folds = stability[stability.versions == "fold"].set_index("model")
     columns = st.columns(max(len(models), 2))
@@ -194,8 +221,8 @@ with engine:
 
 with worth:
     st.subheader("What the engine is worth to you")
-    st.markdown("Two numbers are yours, not ours: how many of your users pay, and how much longer a "
-                "satisfied user stays. Set them here and the figures follow.")
+    st.markdown("Two numbers are yours: how many users pay, and how much longer a satisfied one "
+                "stays. Set them and the figures follow.")
     left, middle, right = st.columns(3)
     price = left.slider("Subscription price, per month", 5, 40, PRICE, 1, format="$%d")
     conversion = middle.slider("Share of users on a paid plan", 5, 25,
@@ -203,12 +230,11 @@ with worth:
     months = right.slider("Extra paid months per subscriber per year", 0.0, 3.0, MONTHS, 0.25)
     value = 1000 * conversion * price * months
 
-    st.caption(f"Scoring one pair takes 2.8 microseconds, so the engine costs "
-               f"${COST_PER_1000_USERS_PER_YEAR:.2f} per 1,000 users per year to run. It cannot be "
-               f"priced on what it costs. The real spending is collecting profile data and "
-               f"monitoring fairness, which is people rather than servers. The market band for the "
-               f"paid share is 8% to 15%: Tinder reports 8.6 million payers against roughly 60 "
-               f"million monthly users, Grindr publishes 8.4%.")
+    st.caption(f"Scoring one pair takes 2.8 microseconds, so running the engine costs "
+               f"${COST_PER_1000_USERS_PER_YEAR:.2f} per 1,000 users per year. The real spending is "
+               f"collecting profile data and monitoring fairness: people, not servers. For "
+               f"reference, the paid share across the market runs 8% to 15% (Tinder 8.6M payers "
+               f"against roughly 60M monthly users, Grindr 8.4%).")
     left, middle, right = st.columns(3)
     left.metric("Value per 1,000 users per year", f"${value:,.0f}")
     middle.metric("Cost of running it", f"${COST_PER_1000_USERS_PER_YEAR:.2f}")
@@ -221,9 +247,9 @@ with fair:
     seen = sides.notna()
     selection = person[seen].groupby(sides[seen]).mean().sort_values()
 
-    st.markdown(f"If the engine treated every group the same, all bars would sit on the yellow "
-                f"line. The widest gap is **{100 * (selection.max() - selection.min()):.1f} "
-                f"points**, between {selection.idxmax()} and {selection.idxmin()} participants.")
+    st.markdown(f"Equal treatment means every bar on the yellow line. The widest gap is "
+                f"**{100 * (selection.max() - selection.min()):.1f} points**, between "
+                f"{selection.idxmax()} and {selection.idxmin()} participants.")
     figure, axis = canvas(7, 3)
     axis.barh(selection.index, 100 * selection, color=SKY)
     axis.axvline(100 * k, color=YELLOW, linewidth=2.5, label="equal treatment")
@@ -233,20 +259,23 @@ with fair:
 
     same = table.samerace.to_numpy()
     amplification = same[scored[picked].shown].mean() / same[oof.match == 1].mean()
-    st.markdown("People do prefer their own background. That is in the data, not in the model. What "
-                "matters is whether the engine **exaggerates** it. Above 1.00 it does. Removing the "
-                "effect entirely is possible, and costs about 50 matches per 1,000 recommendations. "
-                "Dropping ethnicity from the model does not work: the engine rebuilds it from "
-                "income, going-out habits and self-rated attractiveness, and segregation gets "
-                "worse.")
+    st.markdown("People prefer their own background: that is in the data, not the model. The "
+                "question is whether the engine **exaggerates** it. Above 1.00 it does. Removing "
+                "the effect costs about 50 matches per 1,000 recommendations, and simply deleting "
+                "the ethnicity column makes it worse, because the engine rebuilds it from income "
+                "and lifestyle answers.")
     left, right = st.columns(2)
     left.metric("Same-background pairs in the shortlist",
-                f"{100 * same[scored[picked].shown].mean():.0f}%")
+                f"{100 * same[scored[picked].shown].mean():.0f}%",
+                help="Of the pairs the app would show, the share where both have the same "
+                     "background.")
     right.metric("Among the pairs that really matched",
                  f"{100 * same[oof.match == 1].mean():.0f}%",
-                 f"engine is {amplification:.2f}× more segregated", delta_color="inverse")
+                 f"engine is {amplification:.2f}× more segregated", delta_color="inverse",
+                 help="The same share among the dates that actually ended in a match. The engine "
+                      "should not exceed it.")
 
 st.divider()
-st.caption("Out-of-fold results on the Speed Dating Experiment (Fisman, Iyengar, Kamenica & "
-           "Simonson, 2006). Every pair was scored by a model trained without it, and without "
-           "either of the two people, so these are cold-start numbers: what a new user gets.")
+st.caption("Speed Dating Experiment (Fisman, Iyengar, Kamenica & Simonson, 2006). Every pair was "
+           "scored by a model trained without it and without either person, so these are "
+           "cold-start numbers: what a brand new user gets.")
