@@ -1,0 +1,3 @@
+model,shortlist kept after retraining
+logit,0.482621590684841
+xgboost,0.4353785319857971

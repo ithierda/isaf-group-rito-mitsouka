@@ -41,20 +41,23 @@
   the two probabilities are multiplied. 8,368 rows, target at 37%/47% instead of a 16.5% joint event.
   Top decile: 30% matches against 23% predicting `match` directly. `dec` is a target, never a feature.
 
-## Conventions in 04, 05, 06
-- **Ŷ = 1 means "in the top decile"**, never a 0.5 threshold: at a 16.5% base rate with a product of
-  two probabilities, no pair scores above 0.5 and every threshold metric is degenerate. Sensitivity
-  at 5% and 20%.
-- **One `bootstrap_ci(frame, metric, n_boot, stratify_by="wave")`**, copied into each notebook. A gap
-  narrower than its interval is written up as inconclusive, not as a finding.
+## Conventions in 04, 05, 06, 07
+- **Course only.** The methods, tables and their order come from the lectures. Exactly three things
+  are ours and each is labelled in the text: Ŷ = top decile instead of a 0.5 threshold (no pair ever
+  reaches 0.5), the shortlist overlap in 05, and the amplification ratio in 06. Nothing else.
+- **Every section ends with "What it says" and "Conclusion".** Keep that shape.
 - **The two stages add up in logs.** SHAP is computed per stage on the log-odds; `Σφ + φ₀ = margin`
   holds, the probability product does not decompose additively.
 - 04 rebuilds the pipelines from 03: the **final model** (all 8,368 decisions) is what we explain,
   the **five fold models** are what we measure performance on. 05 and 06 refit by design.
+- **The logit is not reproducible across environments.** liblinear with L1 moves individual
+  predictions by up to 0.1 between package versions; XGBoost is bit-identical. Aggregate performance
+  does not move, but 05's coefficient distances do.
 
 ## Layout
 `data/raw` · `data/processed` (committed) · `docs/` · `notebooks/` (01_eda, 02_features, 03_models,
-03b_tabpfn_colab, 04_interpretability, 05_stability, 06_fairness) · `app/` (Streamlit) ·
+03b_tabpfn_colab, 04_interpretability, 05_stability, 06_fairness, 07_recommendation) ·
+`app/` (Streamlit) ·
 `reports/figures/` · `reports/tables/` · `assets/logo/`
 
 Notebooks are self-contained, with no shared module, and move to the repo root on their first cell.
@@ -67,5 +70,4 @@ Python 3.11 in `.venv`, created with `uv` (no Homebrew on the machine). XGBoost 
 
 ## Open
 - **Cost matrix** is undecided, and economic performance is graded.
-- Notebooks 04 (interpretability), 05 (stability), 06 (fairness) read `oof_predictions.csv` and refit nothing.
-  There, `logit` and `xgboost` are the two-stage models; `logit_direct` / `xgboost_direct` are the baseline.
+- Slides not started. TabPFN is done (Julian), merged into `oof_predictions.csv`.

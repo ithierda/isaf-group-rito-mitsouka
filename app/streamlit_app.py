@@ -51,8 +51,9 @@ def plain(column):
 NAMES = {"logit": "Logistic regression", "xgboost": "XGBoost", "tabpfn": "TabPFN",
          "logit_direct": "Logistic regression, direct", "xgboost_direct": "XGBoost, direct"}
 
-# Measured in 04: 2.8 microseconds to score one pair, 30,000 scores per user per month.
-COST_PER_1000_USERS_PER_YEAR = 0.042
+# Measured in 04: a few microseconds to score one pair, 30,000 scores per user per month.
+# The exact figure moves with the hardware; the order of magnitude does not.
+COST_PER_1000_USERS_PER_YEAR = 0.04
 
 st.set_page_config(page_title="Les Rito Mitsouka", page_icon="assets/logo/icon_blue.png",
                    layout="wide")
@@ -109,13 +110,12 @@ headline.markdown(f"## The matching engine, in numbers\n"
 with st.container(border=True):
     left, right = st.columns([2, 3])
     models = left.multiselect("Engines to compare", available,
-                              default=[m for m in ["logit", "xgboost"] if m in available],
+                              default=[m for m in ["logit", "xgboost", "tabpfn"] if m in available],
                               format_func=lambda m: NAMES[m])
     k = right.slider("How much of the catalogue the app shows", 1, 30, 10, 1, format="%d%%") / 100
     right.caption("Showing fewer pairs means better ones, but fewer matches in total. "
                   "This is the product decision, and every number below follows it.")
-    if "tabpfn" not in oof.columns:
-        left.caption("TabPFN joins the list once `tabpfn_oof.csv` is in `data/processed/`.")
+    left.caption("Three engines, all scored on the same pairs and the same folds.")
 
 if not models:
     st.warning("Pick at least one engine above.")
@@ -212,12 +212,14 @@ with engine:
     st.subheader("Does it say the same thing every time?")
     st.markdown("Retrain on a different sample of dates and about half the shortlist changes. "
                 "Refresh recommendations regularly rather than present them as a verdict.")
-    stability = pd.read_csv("reports/tables/05_ranking_stability.csv")
-    folds = stability[stability.versions == "fold"].set_index("model")
+    overlap = pd.read_csv("reports/tables/05_shortlist_overlap.csv", index_col=0)
     columns = st.columns(max(len(models), 2))
-    for column, m in zip(columns, [m for m in models if m in folds.index]):
+    for column, m in zip(columns, [m for m in models if m in overlap.index]):
         column.metric(f"{NAMES[m]}: shortlist kept after retraining",
-                      f"{folds.loc[m, 'Jaccard on the top decile']:.0%}")
+                      f"{overlap.loc[m, 'shortlist kept after retraining']:.0%}")
+    if "tabpfn" in models:
+        st.caption("TabPFN is absent here: comparing refits needs a GPU, so 05 covers the two "
+                   "engines we can retrain locally.")
 
 with worth:
     st.subheader("What the engine is worth to you")
@@ -230,8 +232,8 @@ with worth:
     months = right.slider("Extra paid months per subscriber per year", 0.0, 3.0, MONTHS, 0.25)
     value = 1000 * conversion * price * months
 
-    st.caption(f"Scoring one pair takes 2.8 microseconds, so running the engine costs "
-               f"${COST_PER_1000_USERS_PER_YEAR:.2f} per 1,000 users per year. The real spending is "
+    st.caption(f"Scoring one pair takes a few microseconds, so running the engine costs a few cents "
+               f"per 1,000 users per year. The real spending is "
                f"collecting profile data and monitoring fairness: people, not servers. For "
                f"reference, the paid share across the market runs 8% to 15% (Tinder 8.6M payers "
                f"against roughly 60M monthly users, Grindr 8.4%).")
@@ -256,6 +258,22 @@ with fair:
     axis.set_xlabel("share of a group's dates that get recommended (%)")
     axis.legend(frameon=False, labelcolor=WHITE)
     st.pyplot(figure)
+
+    st.subheader("How the three engines compare")
+    st.markdown("Amplification above 1.00 means the engine shows more same-background pairs than "
+                "actually match. The three differ, and the most accurate is not the fairest.")
+    rows = []
+    for m in models:
+        flags = shown(oof[m], k)
+        person = pd.concat([pd.Series(flags)] * 2, ignore_index=True)[seen.index][seen]
+        gaps = {g: 100 * (person[sides[seen] == g].mean() - person[sides[seen] != g].mean())
+                for g in selection.index}
+        lowest = min(gaps, key=gaps.get)
+        rows.append({"Engine": NAMES[m], "Least recommended": lowest,
+                     "Their gap (points)": round(gaps[lowest], 1),
+                     "Amplification": round(table.samerace.to_numpy()[flags].mean()
+                                            / table.samerace.to_numpy()[oof.match == 1].mean(), 2)})
+    st.dataframe(pd.DataFrame(rows).set_index("Engine"), width="stretch")
 
     same = table.samerace.to_numpy()
     amplification = same[scored[picked].shown].mean() / same[oof.match == 1].mean()

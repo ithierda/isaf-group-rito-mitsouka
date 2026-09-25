@@ -71,21 +71,22 @@ itself if you launched Jupyter from `notebooks/`.
 | `01_eda.ipynb` | The raw data: how it is organised, which columns leak, what the variables mean and how they are coded. Builds one row per pair. | `data/processed/pairs.csv` (4,184 × 138) |
 | `02_features.ipynb` | Cleaning, comparison features, readable names, encoding, and the fold assignment. | `data/processed/model_table.csv` (4,184 × 66) |
 | `03_models.ipynb` | Logistic regression and XGBoost, predicting the two decisions and multiplying them. Saves the out-of-fold predictions. | `data/processed/oof_predictions.csv` |
-| `03b_tabpfn_colab.ipynb` | TabPFN. Runs on Colab with a GPU, see the header of the notebook. | `tabpfn_oof.csv`, to drop into `data/processed/` |
-| `04_interpretability.ipynb` | Coefficients and marginal effects, impurity importance, PDP and ICE, SHAP, permutation importance, XPER, and the economic comparison against random matching. | figures and tables in `reports/` |
-| `05_stability.ipynb` | Distance between 25 versions of each model, stability of the recommended list, leave-one-wave-out, and the cost of imposing stability. | figures and tables in `reports/` |
-| `06_fairness.ipynb` | Statistical parity, conditional parity (Cochran, Mantel and Haenszel), amplification, mitigation, proxy recovery, equivalence testing. | figures and tables in `reports/` |
+| `03b_tabpfn_colab.ipynb` | TabPFN, on a Colab GPU. Writes the predictions that 03 merges in. | `data/processed/tabpfn_oof.csv` |
+| `04_interpretability.ipynb` | Coefficients and marginal effects, impurity importance, PDP and ICE, SHAP and LIME, permutation importance for all three engines, XPER, the surrogate tree, and the economics. | figures and tables in `reports/` |
+| `05_stability.ipynb` | Distance between 25 versions of each model, coefficient drift, leave-one-wave-out, and the cost of imposing stability. | figures and tables in `reports/` |
+| `06_fairness.ipynb` | Statistical parity, conditional parity (Cochran, Mantel and Haenszel), amplification, mitigation, proxy recovery, equal opportunity, calibration, equivalence. | figures and tables in `reports/` |
+| `07_recommendation.ipynb` | The scorecard, three engines by four dimensions, and what we recommend to the client. | `reports/tables/07_scorecard.csv` |
 
-Notebooks 04 to 06 are independent of each other and can be written in parallel. They all read
-`oof_predictions.csv`, where `logit` and `xgboost` are the two-stage models we keep and
-`logit_direct` / `xgboost_direct` the baseline. They also rebuild the pipelines from 03, because an
-explanation, a distance between models and a mitigation variant all need a fitted model rather than
-a column of scores. The recipe is copied from 03 unchanged, and it takes a few seconds.
+Notebooks 04 to 06 are independent of each other and can be written in parallel; 07 reads what they
+export. They all start from `oof_predictions.csv`, where `logit`, `xgboost` and `tabpfn` are the
+two-stage models and the `*_direct` columns are the baseline that predicts `match` in one step. They
+also rebuild the pipelines from 03, because an explanation, a distance between models and a
+mitigation variant all need a fitted model rather than a column of scores.
 
-**Three conventions hold across 04, 05 and 06.** A decision is "in the top decile", not a 0.5
-threshold, because no pair ever scores above 0.5 at a 16.5% base rate. Every number carries a
-bootstrap interval resampled within waves, and a gap smaller than its interval is reported as
-inconclusive. The two stages are combined in logs, never on the probability scale.
+**They follow the course.** The methods, the tables and their order come from the lectures. Three
+things are ours and are labelled as such in the text: Ŷ = 1 means "in the top decile" rather than a
+0.5 threshold, because no pair ever scores above 0.5 at a 16.5% base rate; the shortlist overlap
+between refits in 05; and the amplification ratio in 06.
 
 ## Method, decided so far
 
