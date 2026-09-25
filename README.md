@@ -88,27 +88,23 @@ things are ours and are labelled as such in the text: Ŷ = 1 means "in the top d
 0.5 threshold, because no pair ever scores above 0.5 at a 16.5% base rate; the shortlist overlap
 between refits in 05; and the amplification ratio in 06.
 
-## Method, decided so far
+## Method
 
-- **One row per pair.** Each date appears twice in the raw file, once from each side. Keeping both
-  duplicates every observation and puts the same date on both sides of a split.
-- **Pre-date information only.** 108 of the 195 columns are filled in during or after the date and
-  would leak the answer.
-- **Split on `wave`, with `StratifiedGroupKFold(5)`.** Every participant attends exactly one of the 21
-  evenings, so the wave is the only grouping that keeps a person on a single side. Measured on the
-  same features: a random split scores 0.72 ROC-AUC against 0.60 for the grouped one, and the
-  difference is the model recognising people it has already seen, not skill.
-- **No feature that is constant within a wave.** Such a column is the wave under another name, and a
-  tree will use it to memorise an evening's match rate.
-- **Ethnicity stays in the table** on both sides. The fairness notebook needs it to compare a model
-  fitted with it against one fitted without.
-- **A match is two decisions, not one event.** Every model predicts `her_dec` and `his_dec`
-  separately and multiplies them, rather than predicting `match` directly: 8,368 decision rows
-  instead of 4,184 pairs, and a target at 37% / 47% instead of 16.5%. It costs a little ROC-AUC and
-  gains where the app operates: 30% of the top decile match, against 23% predicting `match`
-  directly. `03_models` keeps both so the choice can be defended.
-- **Readable column names**, set in 02: `her_` / `his_` for a person, a plain word for a property of
-  the pair, one underscore at most (`her_racepref`, `agegap`, `samefield`, `her_fit`).
+- **One row per pair.** Each date appears twice in the raw file, once from each side.
+- **Pre-date information only.** 108 of the 195 columns are filled in during or after the date.
+- **Split on `wave`, `StratifiedGroupKFold(5)`.** Everyone meets everyone of the opposite sex in
+  their evening, so the "dated each other" graph has 21 connected components for 21 waves and there
+  is no finer cut that keeps a person on one side. A random split reads 0.72 ROC-AUC against 0.60,
+  and the gap is the model recognising people. The wave is a **grouping key, never a feature**: 02
+  removes it along with everything constant within a wave.
+- **A match is two decisions.** Every engine predicts `her_dec` and `his_dec` separately and
+  multiplies them: 8,368 decision rows instead of 4,184 pairs, a target at 37% and 47% instead of
+  16.5%, and a top decile at 29.8% against 23.6% predicting `match` directly. 03 keeps both so the
+  choice can be defended.
+- **Ethnicity stays in the table** on both sides, because 06 needs to compare a model fitted with it
+  against one fitted without.
+- **Readable column names**, set in 02: `her_` and `his_` for a person, a plain word for the pair,
+  one underscore at most.
 
 ## The app
 
