@@ -55,6 +55,9 @@ In VS Code: *Python: Select Interpreter* → `.venv`, and pick the **Python (isa
 > cp /opt/anaconda3/lib/libomp.dylib "$(python -c 'import sys; print(sys.base_prefix)')/lib/"
 > ```
 >
+> **Reproducibility:** every `LogisticRegression` is seeded with `random_state=0`. liblinear shuffles
+> internally and without the seed the white box moves between runs. XGBoost and TabPFN are unaffected.
+>
 > **If the repository sits in an iCloud-synced folder** (anything under `~/Documents` with "Optimise
 > Mac Storage" on), iCloud will evict `.venv` and every `import pandas` then waits on a download,
 > minutes per cell. Either keep the venv outside iCloud (`uv venv --python 3.11 ~/.venvs/isaf`) or

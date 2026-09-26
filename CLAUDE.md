@@ -50,9 +50,10 @@
   holds, the probability product does not decompose additively.
 - 04 rebuilds the pipelines from 03: the **final model** (all 8,368 decisions) is what we explain,
   the **five fold models** are what we measure performance on. 05 and 06 refit by design.
-- **The logit is not reproducible across environments.** liblinear with L1 moves individual
-  predictions by up to 0.1 between package versions; XGBoost is bit-identical. Aggregate performance
-  does not move, but 05's coefficient distances do.
+- **Every `LogisticRegression` carries `random_state=0`.** liblinear shuffles internally, so without
+  it the logit moved by up to 0.1 per pair between two identical runs while XGBoost stayed
+  bit-identical. Aggregate metrics never moved, but 05's coefficient distances did. Do not drop the
+  seed.
 
 ## Layout
 `data/raw` · `data/processed` (committed) · `docs/` · `notebooks/` (01_eda, 02_features, 03_models,
