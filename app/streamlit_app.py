@@ -51,9 +51,7 @@ def plain(column):
 NAMES = {"logit": "Logistic regression", "xgboost": "XGBoost", "tabpfn": "TabPFN",
          "logit_direct": "Logistic regression, direct", "xgboost_direct": "XGBoost, direct"}
 
-# Measured in 04: a few microseconds to score one pair, 30,000 scores per user per month.
-# The exact figure moves with the hardware; the order of magnitude does not.
-COST_PER_1000_USERS_PER_YEAR = 0.04
+# Measured in 04 and read from its table, so the app never quotes a stale cost.
 
 st.set_page_config(page_title="Les Rito Mitsouka", page_icon="assets/logo/icon_blue.png",
                    layout="wide")
@@ -76,7 +74,8 @@ def load():
     oof = pd.read_csv("data/processed/oof_predictions.csv")
     table = pd.read_csv("data/processed/model_table.csv")
     sides = pd.concat([table.her_race, table.his_race], ignore_index=True).map(RACE)
-    return oof, table, sides
+    cost = pd.read_csv("reports/tables/04_running_cost.csv", index_col=0, header=None).squeeze()
+    return oof, table, sides, cost
 
 
 def shown(scores, k):
@@ -97,7 +96,9 @@ def canvas(width, height):
     return figure, axis
 
 
-oof, table, sides = load()
+oof, table, sides, cost = load()
+COST_PER_1000_USERS_PER_YEAR = float(cost['dollars per 1000 users per year'])
+MICROSECONDS_PER_PAIR = float(cost['microseconds per pair'])
 available = [c for c in NAMES if c in oof.columns]
 base = oof.match.mean()
 
@@ -134,11 +135,11 @@ a.metric("Matches per 1,000 shown", f"{1000 * rate[best]:.0f}",
          f"{1000 * (rate[best] - base):+.0f} vs chance",
          help="Of 1,000 pairs the app puts in front of people, how many say yes to each other.")
 b.metric("Better than chance", f"{rate[best] / base:.2f}×",
-         help="That match rate divided by the 16.5% you get picking pairs at random.")
+         help=f"That match rate divided by the {base:.1%} you get picking pairs at random.")
 c.metric("Worth per 1,000 users a year", f"${headline_value:,.0f}",
          help="At $15 a month, 12% of users paying, one extra paid month each. "
               "Change the assumptions in 'What it is worth'.")
-d.metric("Costs to run, same basis", f"${COST_PER_1000_USERS_PER_YEAR:.2f}",
+d.metric("Costs to run, same basis", f"${COST_PER_1000_USERS_PER_YEAR:.3f}",
          f"{headline_value / COST_PER_1000_USERS_PER_YEAR:,.0f}× return", delta_color="off")
 st.caption(f"Best of the engines you selected: **{NAMES[best]}**, at a {k:.0%} shortlist.")
 
@@ -183,10 +184,10 @@ with compare:
     st.subheader("The standard scores")
     st.markdown(
         f"| Metric | What it measures | Chance | Better is |\n|---|---|---|---|\n"
-        f"| PR-AUC | Finding the few pairs that match. **The one to read.** | 0.165 | higher |\n"
+        f"| PR-AUC | Finding the few pairs that match. **The one to read.** | {base:.3f} | higher |\n"
         f"| ROC-AUC | The whole ranking, including the bottom the app never shows. | 0.500 | higher |\n"
-        f"| Match rate in the top {k:.0%} | Of the pairs shown, the share that match. | 16.5% | higher |\n"
-        f"| Lift over chance | That rate divided by 16.5%. | 1.00× | higher |")
+        f"| Match rate in the top {k:.0%} | Of the pairs shown, the share that match. | {base:.1%} | higher |\n"
+        f"| Lift over chance | That rate divided by {base:.1%}. | 1.00× | higher |")
     scores = pd.DataFrame({
         NAMES[m]: {"PR-AUC": average_precision_score(oof.match, oof[m]),
                    "ROC-AUC": roc_auc_score(oof.match, oof[m]),
@@ -232,14 +233,14 @@ with worth:
     months = right.slider("Extra paid months per subscriber per year", 0.0, 3.0, MONTHS, 0.25)
     value = 1000 * conversion * price * months
 
-    st.caption(f"Scoring one pair takes a few microseconds, so running the engine costs a few cents "
-               f"per 1,000 users per year. The real spending is "
+    st.caption(f"Scoring one pair takes {MICROSECONDS_PER_PAIR:.1f} microseconds, so running the engine "
+               f"costs ${COST_PER_1000_USERS_PER_YEAR:.3f} per 1,000 users per year. The real spending is "
                f"collecting profile data and monitoring fairness: people, not servers. For "
                f"reference, the paid share across the market runs 8% to 15% (Tinder 8.6M payers "
                f"against roughly 60M monthly users, Grindr 8.4%).")
     left, middle, right = st.columns(3)
     left.metric("Value per 1,000 users per year", f"${value:,.0f}")
-    middle.metric("Cost of running it", f"${COST_PER_1000_USERS_PER_YEAR:.2f}")
+    middle.metric("Cost of running it", f"${COST_PER_1000_USERS_PER_YEAR:.3f}")
     right.metric("Return", f"{value / COST_PER_1000_USERS_PER_YEAR:,.0f}×" if value else "n/a")
 
 with fair:
