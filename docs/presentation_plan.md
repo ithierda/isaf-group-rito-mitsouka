@@ -255,7 +255,6 @@ compare the three engines and move the shortlist length themselves."*
 
 - PDP and ICE, and why a PDP averages over combinations that never happen.
 - Permutation importance with error bars, and XPER with its additivity gap.
-- The depth-3 surrogate tree and its fidelity of 0.24.
 - Calibration by group, and the full TOST table.
 - The eighteen engineered features that did not work.
 
