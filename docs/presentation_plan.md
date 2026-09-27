@@ -72,7 +72,9 @@ The strongest technical content in the deck. Do not rush it.
 | XGBoost, two-stage | 0.218 | 0.286 | 1.74 |
 | TabPFN | **0.234** | 0.289 | 1.75 |
 
-- Put the **error bars on the chart**, not only in the table. Base rate 16.5% as a dashed line.
+- The chart is `reports/figures/07_top_decile.png`: the three top-decile rates with their 95%
+  intervals and the base rate as a dashed line. Show it instead of the table if you are short on time,
+  it makes the argument on its own.
 - The sentence, repeated at the end: **"the interval is eight points wide. The two-stage gain is
   real. The gap between the three engines is not. Performance cannot choose for us."**
 - A point in your favour: eighteen further engineered features all landed inside the same interval.
@@ -187,7 +189,9 @@ disadvantages a group and whether it amplifies that preference."**
 - One sentence: **"the engine did not invent a preference, it sharpened one."**
 - And the result nobody expects, `06_by_model.csv`: the three engines differ.
   **XGBoost 1.01, logit 1.16, TabPFN 1.27.** Fairness separates them where performance could not.
-- You still need this chart. A bar pair, 41% against 48%, with the interval.
+- The chart is `reports/figures/06_amplification.png`. Left panel: 41.0% against 47.5%. Right panel:
+  the three engines with their intervals and a line at 1.00. **XGBoost's interval crosses that line**,
+  so its amplification is not distinguishable from none, which is the whole point of the slide.
 
 **Slide 15, the obvious fix does not work, 45 s.** From `06_mitigation.csv`.
 
@@ -285,8 +289,6 @@ compare the three engines and move the shortlist length themselves."*
 
 ## Before Monday
 
-- [ ] Build the amplification chart, 41% against 48% with the interval. No PNG exists yet.
-- [ ] Build the top-decile chart with error bars for slide 6.
 - [ ] Decide live demo or screenshots for slide 18.
 - [ ] Two full rehearsals with a timer. Target 13:30.
 - [ ] Send slides, notebooks and app before Monday 09:40.

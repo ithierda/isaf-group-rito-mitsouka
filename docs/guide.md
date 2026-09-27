@@ -231,7 +231,7 @@ inside the strata.
 Only White is green, which is what a majority group usually does. So it is not "the participants were
 biased and the model reflects it": the model produces gaps the legitimate variables do not explain.
 
-**Amplification, our contribution.** The share of same-background pairs among the pairs **shown**,
+**Amplification, our contribution** (`reports/figures/06_amplification.png`). The share of same-background pairs among the pairs **shown**,
 divided by their share among the pairs that **matched**. Above 1, the recommendation is more
 segregated than reality. **41% of real matches are same-background, 47.5% of the shortlist. Ratio
 1.16, interval [1.03, 1.29].** The engine did not invent a preference, it sharpened one.
@@ -375,7 +375,8 @@ exactly like a notebook that will not run.
 | Instability | 0.56 | **0.30** | needs a GPU to measure |
 | Amplification | 1.16 | **1.01** | 1.27 |
 
-**The three engines are separated by less than the width of our error bars on performance**, the
+**The three engines are separated by less than the width of our error bars on performance**
+(`reports/figures/07_top_decile.png`), the
 interval on the top decile being eight points wide. So the choice is made on the other three
 dimensions.
 
