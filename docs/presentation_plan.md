@@ -178,8 +178,9 @@ descriptive, but whether the engine disadvantages a group and whether it amplifi
 **On the slide:**
 - Mapping, small: Y = matched · **Ŷ = in the top decile** · D = protected.
 - **Asian participants appear in 5.8% of shown pairs against 11.3% for everyone else. Black 19.3%.**
-- Conditional parity, Cochran Mantel Haenszel on four legitimate variables: **4 of 6 gaps survive.**
-  Asian odds ratio **0.54**, Black **2.12**, mixed pairs **0.69**. Only White is green.
+- Conditional parity, Cochran Mantel Haenszel on four legitimate variables: **5 of the 6 gaps
+  survive.** Only White is green.
+  Asian odds ratio **0.54**, Black **2.12**, mixed pairs **0.69**.
 - **Among the pairs that really matched, the app surfaces 10.5% of the Asian ones against 20.1%.**
 
 **Say:** the last line out loud, because it is a loss and not a ratio.

@@ -227,7 +227,7 @@ confusion-matrix metric is degenerate.
 four strata, then the **Cochran, Mantel and Haenszel** test asks whether D and Ŷ are still associated
 inside the strata.
 
-**Verdict: 4 of the 6 gaps survive.** Asian common odds ratio 0.54, Black 2.12, mixed pairs 0.69.
+**Verdict: 5 of the 6 gaps survive.** Asian common odds ratio 0.54, Black 2.12, mixed pairs 0.69.
 Only White is green, which is what a majority group usually does. So it is not "the participants were
 biased and the model reflects it": the model produces gaps the legitimate variables do not explain.
 

@@ -1,0 +1,6 @@
+,impurity,permutation,SHAP,XPER
+#1,self_field,other_race,female,female
+#2,other_field,raceclash,self_optimism,self_optimism
+#3,self_goal,self_income,self_race,other_datefreq
+#4,other_race,female,other_race,agegap
+#5,self_race,other_datefreq,self_wantshar,samefield

@@ -30,7 +30,15 @@ The logistic regressions were reseeded on 26/09, which moved a few figures. Curr
 
 ---
 
-## The one real error: slide 9 shows the wrong half of the model
+## Slide 11 says four gaps survive. It is five.
+
+`06_parity_verdicts.csv` marks Asian, Latino, Other, Black and mixed pairs RED, and only White
+GREEN. **5 of 6**, not 4. My own plan and guide carried the same error and are now fixed. It is the
+stronger number anyway: only the majority group comes out clean.
+
+---
+
+## The one real error on the modelling side: slide 9 shows the wrong half of the model
 
 Every row in the table is a dummy, a 0 to 1 jump. That is why the list is topped by
 `self_goal=rare`, `other_field=social work` and `other_race=rare`, which have **p-values of 0.567 and
