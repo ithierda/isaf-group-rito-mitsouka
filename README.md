@@ -123,7 +123,18 @@ same-background pairs than actually match.
 
 ## The app
 
-**Live:** <!-- app-url -->*not deployed yet, paste the Streamlit URL here*<!-- /app-url -->
+**To show it to someone, from your own machine, with nothing to install:**
+
+```bash
+bash tools/share_app.sh
+```
+
+It starts the app and prints a public `https://....lhr.life` address that works from any browser.
+The address changes every run and disappears when you press Ctrl-C, so paste it into the slide on
+the morning. Your laptop has to stay awake and online while it is up. Tested and working.
+
+**Permanent URL** on Streamlit Community Cloud needs the repository to be public first:
+<!-- app-url -->*not deployed yet, paste the streamlit.app URL here*<!-- /app-url -->
 
 **Locally**, from the repository root, with the environment from the Setup section:
 
