@@ -32,36 +32,30 @@ the table it rewrites along with it.
 
 ## Setup
 
-Python 3.11. If you do not have it, `uv` installs one without touching your system Python
-(`curl -LsSf https://astral.sh/uv/install.sh | sh` if you do not have `uv` either):
+Python 3.11, and **the environment goes outside the repository**. That is not a style preference: if
+the repo sits under `~/Documents` with iCloud on, iCloud evicts the packages and every `import shap`
+then waits on a download, which looks exactly like a notebook that will not run.
 
 ```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh     # if you do not have uv
 uv python install 3.11
-uv venv --python 3.11 .venv
-
-# or, if python3.11 is already on your machine:
-# python3.11 -m venv .venv
-
-source .venv/bin/activate
-pip install -r requirements.txt
-python -m ipykernel install --user --name isaf --display-name "Python (isaf)"
+uv venv --python 3.11 ~/.venvs/isaf
+uv pip install --python ~/.venvs/isaf/bin/python -r requirements.txt
+~/.venvs/isaf/bin/python -m ipykernel install --user --name isaf --display-name "Python (isaf)"
 ```
 
-In VS Code: *Python: Select Interpreter* → `.venv`, and pick the **Python (isaf)** kernel in notebooks.
+In VS Code: *Python: Select Interpreter* → `~/.venvs/isaf/bin/python`, and pick the
+**Python (isaf)** kernel in notebooks.
 
-> **macOS:** XGBoost needs OpenMP and will not import without it. With Homebrew, `brew install libomp`.
-> Without Homebrew, copy the copy Anaconda ships into the Python you just created the venv from:
+> **macOS and XGBoost:** it needs OpenMP and will not import without it. With Homebrew,
+> `brew install libomp`. Without it, copy the one Anaconda ships:
 > ```bash
-> cp /opt/anaconda3/lib/libomp.dylib "$(python -c 'import sys; print(sys.base_prefix)')/lib/"
+> cp /opt/anaconda3/lib/libomp.dylib ~/.venvs/isaf/lib/
 > ```
 >
-> **Reproducibility:** every `LogisticRegression` is seeded with `random_state=0`. liblinear shuffles
-> internally and without the seed the white box moves between runs. XGBoost and TabPFN are unaffected.
->
-> **If the repository sits in an iCloud-synced folder** (anything under `~/Documents` with "Optimise
-> Mac Storage" on), iCloud will evict `.venv` and every `import pandas` then waits on a download,
-> minutes per cell. Either keep the venv outside iCloud (`uv venv --python 3.11 ~/.venvs/isaf`) or
-> right-click the folder and choose *Keep Downloaded*.
+> **Reproducibility:** every `LogisticRegression` carries `random_state=0`. liblinear shuffles
+> internally, and without the seed the white box moves between two identical runs. XGBoost and
+> TabPFN are unaffected.
 
 ## Notebooks
 

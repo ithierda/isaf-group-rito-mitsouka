@@ -64,8 +64,11 @@
 Notebooks are self-contained, with no shared module, and move to the repo root on their first cell.
 
 ## Environment
-Python 3.11 in `.venv`, created with `uv` (no Homebrew on the machine). XGBoost needs `libomp`; see the README.
-- **iCloud evicts `.venv`** when the repo lives under `~/Documents`: imports then hang for minutes.
+Python 3.11 in **`~/.venvs/isaf`**, outside the repository, created with `uv` (no Homebrew on the
+machine). XGBoost needs `libomp`; see the README.
+- **The venv must stay out of iCloud.** It used to live in `.venv` inside the repo, under
+  `~/Documents`, and iCloud kept evicting it: imports then hang for minutes and a notebook looks
+  broken when it is only waiting. Do not move it back.
 - `XPER` (the professor's package) is in `requirements.txt`. Two traps: `kernel=False` is broken in
   0.0.92, and `N_coalition_sampled` must stay at or below `2**p - 2` or it raises `IndexError`.
 
