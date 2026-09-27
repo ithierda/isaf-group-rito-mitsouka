@@ -10,8 +10,8 @@ that chooses, on the Speed Dating Experiment data, and then judge three engines 
 **performance**, **interpretability**, **stability** and **fairness**. The protected attribute is
 ethnicity.
 
-> **Never seen this before?** Start with **[`docs/simple.md`](docs/simple.md)**: the whole project in
-> plain words, then every technical term in the repository defined in one line.
+> **Start here:** **[`docs/guide.md`](docs/guide.md)**. The whole project in plain words, every
+> method and number, and the questions we expect.
 
 ## What we found
 
@@ -44,11 +44,10 @@ same-background pairs than actually match.
 
 | | |
 |---|---|
-| The project in plain words | [`docs/simple.md`](docs/simple.md) |
-| Every decision, method and number, with the questions we expect | [`docs/guide.md`](docs/guide.md) |
-| The analysis itself | [`notebooks/`](notebooks/), numbered, run in order |
+| Everything, in plain words | [`docs/guide.md`](docs/guide.md) |
+| The analysis | [`notebooks/`](notebooks/), numbered, run in order |
 | What the client sees | `app/streamlit_app.py` |
-| The slides and the speaking plan | [`docs/presentation_plan.md`](docs/presentation_plan.md) |
+| The talk | [`docs/presentation_plan.md`](docs/presentation_plan.md) |
 
 ### The notebooks
 
@@ -151,7 +150,7 @@ it decides · What it is worth · Is it fair?*
 ├── data/
 │   ├── raw/        the original dataset, never modified
 │   └── processed/  what the notebooks build, committed
-├── docs/           plain-words guide, full guide, slides, codebook
+├── docs/           the guide, the slides, the dataset codebook
 ├── notebooks/      the analysis, numbered
 ├── reports/
 │   ├── figures/    every chart, including the annex ones
