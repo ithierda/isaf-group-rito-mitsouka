@@ -118,6 +118,13 @@ It refits nothing. Performance, economics and fairness are recomputed live from
 `oof_predictions.csv` at whatever shortlist length you pick; interpretability and stability are
 read from `reports/`. TabPFN appears on its own once `tabpfn_oof.csv` is in `data/processed/`.
 
+## Documents
+
+- [`docs/guide.md`](docs/guide.md): every decision, every method and every number in one place, with
+  the questions we expect and the answers. Read this before the talk.
+- [`docs/presentation_plan.md`](docs/presentation_plan.md): the 18 slides, who speaks when, and what
+  goes on each one.
+
 ## Data
 
 See [`data/README.md`](data/README.md). Source: Fisman, Iyengar, Kamenica & Simonson (2006),

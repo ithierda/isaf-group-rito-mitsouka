@@ -82,7 +82,7 @@ The strongest technical content in the deck. Do not rush it.
 
 | list shown | matches /1,000 | extra /1,000 | extra matches over the catalogue |
 |---|---|---|---|
-| top 5% | 314 | +149 | +31 |
+| top 5% | 319 | +154 | +32 |
 | top 10% | 298 | +133 | +56 |
 | top 20% | 235 | +70 | +59 |
 
@@ -172,8 +172,8 @@ disadvantages a group and whether it amplifies that preference."**
 
 **Slide 13, the gaps and whether they survive, 60 s.**
 - Mapping, small: Y = matched, **Ŷ = in the top decile** (no pair scores above 0.5), D = protected.
-- Raw parity: **Asian participants in 5.8% of shown pairs against 11.3% for everyone else. Black
-  19.5%. Mixed pairs −3.4 points.**
+- Raw parity: **Asian participants appear in 5.8% of shown pairs against 11.3% for everyone else.
+  Black 19.3%. Mixed pairs 3.3 points below same-background ones.**
 - Conditional parity, Cochran Mantel Haenszel on four legitimate variables (`other_selfattr`,
   `other_selfsinc`, `interests`, `agegap`). Verdict table, colour coded: **4 of 6 gaps survive.**
   Asian odds ratio **0.54**, Black **2.12**, mixed pairs **0.69**. Only White is green.
@@ -183,7 +183,7 @@ disadvantages a group and whether it amplifies that preference."**
 **Slide 14, amplification, 45 s. Our contribution, so sell it.**
 - Share of same-background pairs among the pairs **shown**, divided by their share among the pairs
   that **matched**. Above 1, the recommendation is more segregated than reality.
-- **41% of real matches are same-background, 48% of shown pairs. Ratio 1.16, CI [1.03, 1.30].**
+- **41% of real matches are same-background, 47.5% of shown pairs. Ratio 1.16, CI [1.03, 1.29].**
 - One sentence: **"the engine did not invent a preference, it sharpened one."**
 - And the result nobody expects, `06_by_model.csv`: the three engines differ.
   **XGBoost 1.01, logit 1.16, TabPFN 1.27.** Fairness separates them where performance could not.
@@ -195,7 +195,7 @@ disadvantages a group and whether it amplifies that preference."**
 |---|---|---|
 | full model | 1.16 | 0.298 |
 | without ethnicity | **1.35** | 0.251 |
-| ethnicity neutralised at prediction time | **1.57** | 0.248 |
+| ethnicity neutralised at prediction time | **1.59** | 0.246 |
 | full unawareness | **1.07** | 0.248 |
 
 - **"Removing the ethnicity column makes the segregation worse."** The model leans harder on whatever
