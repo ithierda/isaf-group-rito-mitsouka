@@ -69,7 +69,7 @@ itself if you launched Jupyter from `notebooks/`.
 | `02_features.ipynb` | Cleaning, comparison features, readable names, encoding, and the fold assignment. | `data/processed/model_table.csv` (4,184 × 66) |
 | `03_models.ipynb` | Logistic regression and XGBoost, predicting the two decisions and multiplying them. Saves the out-of-fold predictions. | `data/processed/oof_predictions.csv` |
 | `03b_tabpfn_colab.ipynb` | TabPFN, on a Colab GPU. Writes the predictions that 03 merges in. | `data/processed/tabpfn_oof.csv` |
-| `04_interpretability.ipynb` | Coefficients and marginal effects, impurity importance, PDP and ICE, SHAP and LIME, permutation importance for all three engines, XPER, the surrogate tree, and the economics. | figures and tables in `reports/` |
+| `04_interpretability.ipynb` | Coefficients and marginal effects, impurity importance, PDP and ICE, SHAP and LIME, permutation importance for all three engines, XPER, and the economics. | figures and tables in `reports/` |
 | `05_stability.ipynb` | Distance between 25 versions of each model, coefficient drift, leave-one-wave-out, and the cost of imposing stability. | figures and tables in `reports/` |
 | `06_fairness.ipynb` | Statistical parity, conditional parity (Cochran, Mantel and Haenszel), amplification, mitigation, proxy recovery, equal opportunity, calibration, equivalence. | figures and tables in `reports/` |
 | `07_recommendation.ipynb` | The scorecard, three engines by four dimensions, and what we recommend to the client. | `reports/tables/07_scorecard.csv` |
