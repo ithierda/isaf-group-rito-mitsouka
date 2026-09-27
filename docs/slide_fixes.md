@@ -1,6 +1,6 @@
-# Fixes for `ISAF Project - Rito Mitsouka.pptx`
+# Review of the deck
 
-Read against the deck of 27/09, 14 slides. Ordered by urgency.
+Read against the version of 27/09, 14 slides. Our own working checklist, ordered by urgency.
 
 ---
 
@@ -10,9 +10,9 @@ Read against the deck of 27/09, 14 slides. Ordered by urgency.
 
 | Slide | Text to delete |
 |---|---|
-| 5 | *"À remplacer par les vrais chiffres après:"* |
-| 6 | *"Peut-être plutôt mettre le bar chart avec le threshold (ce que Justin a fait sur le streamlit)"* |
-| 13 | *"Pas convaincu de cette slide de claude"* |
+| 5 | the reminder to replace the placeholder figures |
+| 6 | the note about which chart to use |
+| 13 | the note questioning the slide |
 
 ---
 
@@ -139,7 +139,8 @@ interval crossing 1.00, so its amplification is not distinguishable from none, w
 
 ## Slide 13 is fine
 
-The note says otherwise, but the seven recommendations are the right seven and in the right order.
+The note on it says otherwise, but the seven recommendations are the right seven and in the right
+order.
 One thing to add out loud rather than on the slide: **XGBoost is the fairest of the three**,
 amplification 1.01 against 1.16, and choosing it instead is defensible for about one point of
 top-decile rate. Saying it before anyone asks is stronger than being asked.
