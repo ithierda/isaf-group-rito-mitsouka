@@ -19,5 +19,12 @@ venv/
 *.pkl
 *.joblib
 
-# PowerPoint lock files
+# PowerPoint lock files and Office temporaries
 ~$*
+*.tmp
+
+# Streamlit local state
+.streamlit/cache/
+
+# Editors
+.idea/

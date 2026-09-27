@@ -103,27 +103,49 @@ between refits in 05; and the amplification ratio in 06.
 - **Readable column names**, set in 02: `her_` and `his_` for a person, a plain word for the pair,
   one underscore at most.
 
+## Results at a glance
+
+<!-- scorecard:start -->
+| Engine | PR-AUC | Top decile | Lift over chance | Instability | Amplification |
+|---|---|---|---|---|---|
+| Lasso logistic regression | 0.228 | 0.298 | 1.81x | 0.56 | 1.16 |
+| XGBoost | 0.218 | 0.286 | 1.74x | 0.30 | 1.01 |
+| TabPFN | 0.234 | 0.289 | 1.75x | n/a | 1.27 |
+<!-- scorecard:end -->
+
+Out-of-fold on 4,184 pairs, base match rate 16.5%. PR-AUC and the top decile come from
+`oof_predictions.csv`, instability from 05 and amplification from 06. Regenerate the table with
+`python tools/refresh_readme.py` after re-running the notebooks; do not edit it by hand.
+
+**Instability** is the typical distance between two refits of the same model, divided by the size of
+the average model, so lower is steadier. **Amplification** above 1.00 means the engine shows more
+same-background pairs than actually match.
+
 ## The app
+
+**Live:** <!-- app-url -->*not deployed yet, paste the Streamlit URL here*<!-- /app-url -->
+
+**Locally**, from the repository root, with the environment from the Setup section:
 
 ```bash
 streamlit run app/streamlit_app.py
 ```
 
-Written for the client, not for us: matches, money and fairness, with the technical metrics kept
-but explained in a line each. A headline row of four figures, then four tabs (*Compare the
-engines · How it decides · What it is worth · Is it fair?*) and two controls at the top that drive
-everything below: which engines to compare, and how much of the catalogue the app would show.
-
-It refits nothing. Performance, economics and fairness are recomputed live from
-`oof_predictions.csv` at whatever shortlist length you pick; interpretability and stability are
-read from `reports/`. TabPFN appears on its own once `tabpfn_oof.csv` is in `data/processed/`.
+It opens on `http://localhost:8501` and needs nothing but the committed CSVs, so a fresh clone plus
+`pip install -r requirements.txt` is enough. It refits nothing: performance, economics and fairness
+are recomputed live from `oof_predictions.csv` at whatever shortlist length you pick, while
+interpretability and stability are read from `reports/tables/`. Written for the client rather than
+for us, with a headline row of four figures and four tabs, *Compare the engines · How it decides ·
+What it is worth · Is it fair?*, driven by two controls at the top: which engines to compare, and how
+much of the catalogue the app would show.
 
 ## Documents
 
 - [`docs/guide.md`](docs/guide.md): every decision, every method and every number in one place, with
   the questions we expect and the answers. Read this before the talk.
-- [`docs/presentation_plan.md`](docs/presentation_plan.md): the 18 slides, who speaks when, and what
-  goes on each one.
+- [`docs/presentation_plan.md`](docs/presentation_plan.md): the slides, who speaks when, what goes on
+  each one and what to say.
+- [`docs/slide_fixes.md`](docs/slide_fixes.md): the review of the deck, what to change and why.
 
 ## Data
 
