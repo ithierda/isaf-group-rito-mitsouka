@@ -11,8 +11,7 @@ venv/
 
 # OS / editors
 .DS_Store
-.vscode/*
-!.vscode/settings.json
+.vscode/
 
 # Generated tables are committed: everyone needs them without rerunning the notebooks.
 # Only the local clutter is ignored.
@@ -28,3 +27,15 @@ venv/
 
 # Editors
 .idea/
+
+# Kept on the machine, deliberately not published: the deck, the working documents,
+# the annex figures they use, and the local helper scripts.
+CLAUDE.md
+data/README.md
+docs/*.pptx
+docs/*.pdf
+docs/guide.md
+docs/presentation_plan.md
+docs/slide_fixes.md
+reports/figures/annex_*.png
+tools/

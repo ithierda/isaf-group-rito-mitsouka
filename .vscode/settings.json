@@ -1,9 +1,0 @@
-{
-  "python.defaultInterpreterPath": "${userHome}/.venvs/isaf/bin/python",
-  "python.terminal.activateEnvironment": true,
-  "jupyter.notebookFileRoot": "${workspaceFolder}",
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/.ipynb_checkpoints": true
-  }
-}
